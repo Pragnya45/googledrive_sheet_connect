@@ -28,23 +28,23 @@ const icon = (name) => (
 
 const navConfig = [
   {
-    title: "Add Patients",
-    path: "/dashboard/addPatients",
+    title: "Patients",
+    path: "/",
     icon: icon("ic_user"),
   },
-  {
-    title: "Edit patients",
-    path: "/dashboard/editPatients",
-    icon: icon("ic_user"),
-  },
-  {
-    title: "Search Patients",
-    path: "/dashboard/search",
-    icon: icon("ic_user"),
-  },
+  //   {
+  //     title: "Edit patients",
+  //     path: "/dashboard/editPatients",
+  //     icon: icon("ic_user"),
+  //   },
+  //   {
+  //     title: "Search Patients",
+  //     path: "/dashboard/search",
+  //     icon: icon("ic_user"),
+  //   },
   {
     title: "Select File",
-    path: "/dashboard/select_file",
+    path: "/select-file",
     icon: icon("ic_user"),
   },
 ];

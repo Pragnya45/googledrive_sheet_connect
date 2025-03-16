@@ -1,9 +1,9 @@
 import { Stack, Typography } from "@mui/material";
 import React from "react";
 import { Helmet } from "react-helmet-async";
-//import PatientForm from "../sections/Form/PatientForm";
+import PatientForm from "../Views/PatientForm";
 
-export default function AddPatientsPage() {
+export default function CreatePatientsPage() {
   return (
     <>
       <Helmet>
@@ -19,7 +19,7 @@ export default function AddPatientsPage() {
           Add Patients Form
         </Typography>
       </Stack>
-      {/* <PatientForm /> */}
+      <PatientForm />
     </>
   );
 }
