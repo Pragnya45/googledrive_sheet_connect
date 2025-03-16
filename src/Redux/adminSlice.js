@@ -3,6 +3,7 @@ import { adminLogoutFn } from "./logoutSlice";
 
 const initialState = {
   token: "",
+  fileId: "",
 };
 
 const adminSlice = createSlice({
