@@ -21,6 +21,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { usePaginationApi } from "../hooks/usePaginationApi";
 import { adminState } from "../Redux/adminSlice";
 import { useSelector } from "react-redux";
+import TablePagination from "../Components/TablePagination";
+import CircularProgress from "@mui/material/CircularProgress";
 
 function createData(
   firstName,
@@ -268,10 +270,11 @@ export default function DataTable({ searchQuery }) {
     query: `&limit=10&spreadsheetId=${fileId}${
       searchQuery ? `&name=${searchQuery}` : ""
     }`,
-    queryKey: "patients",
+    queryKey: "patients" + searchQuery,
     body: {
       method: "GET",
     },
+    enabled: true,
   });
   const patientData = data?.response?.results;
   return (
@@ -291,11 +294,29 @@ export default function DataTable({ searchQuery }) {
           </TableRow>
         </TableHead>
         <TableBody>
-          {patientData?.slice(1)?.map((row, index) => (
-            <Row key={row.index} row={row} />
-          ))}
+          {isFetching ? (
+            <TableRow>
+              <TableCell colSpan={8}>
+                <CircularProgress color="black" />
+              </TableCell>
+            </TableRow>
+          ) : patientData && patientData.length ? (
+            patientData?.map((row, index) => <Row key={index} row={row} />)
+          ) : (
+            <TableRow>
+              <TableCell colSpan={8}>No data Available </TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
+      {Array.isArray(patientData) && patientData?.length ? (
+        <TablePagination
+          fetchNextPage={fetchNextPage}
+          fetchPreviousPage={fetchPreviousPage}
+          fetchPage={fetchPage}
+          pagination={pagination}
+        />
+      ) : null}
     </TableContainer>
   );
 }
