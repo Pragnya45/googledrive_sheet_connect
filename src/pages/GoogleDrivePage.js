@@ -15,7 +15,7 @@ export default function GoogleDrivePage() {
   const [loading, setLoading] = useState(true);
   const [fileId, setFileId] = useState(null);
   const [isSignedin, setIsSignedin] = useState(false);
-  const { token } = useSelector(adminState);
+  const { token, fileId: file } = useSelector(adminState);
   const { showMessage } = useNotification();
   const dispatch = useDispatch();
   // useEffect(() => {
@@ -57,7 +57,7 @@ export default function GoogleDrivePage() {
     const client = window.google.accounts.oauth2.initTokenClient({
       client_id: env?.googleClientId,
       scope:
-        "https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/spreadsheets.readonly https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file",
       callback: (response) => {
         if (response.error) {
           console.error("Error during authentication:", response);
@@ -71,7 +71,7 @@ export default function GoogleDrivePage() {
       },
     });
 
-    client.requestAccessToken(); // Triggers OAuth popup
+    client.requestAccessToken({ prompt: "" });
   }
 
   function signOut() {
@@ -151,9 +151,9 @@ export default function GoogleDrivePage() {
         )}
 
         {/* Show Selected File */}
-        {fileId && (
+        {(file ? file : fileId) && (
           <Typography variant="subtitle1" sx={{ mt: 2 }}>
-            Selected File ID: {fileId}
+            Selected File ID: {file ? file : fileId}
           </Typography>
         )}
       </Container>

@@ -18,6 +18,9 @@ import { Button, TextField } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { usePaginationApi } from "../hooks/usePaginationApi";
+import { adminState } from "../Redux/adminSlice";
+import { useSelector } from "react-redux";
 
 function createData(
   firstName,
@@ -80,15 +83,15 @@ function Row(props) {
             </IconButton>
           </Link>
         </TableCell>
-        <TableCell>{row.PatientID}</TableCell>
+        <TableCell>{row[0] || "N/A"}</TableCell>
         <TableCell component="th" scope="row">
-          {`${row.firstName} ${row.lastName}`}
+          {row[1] + " " + row[2]}
         </TableCell>
-        <TableCell>{row.Location}</TableCell>
-        <TableCell>{row.Age}</TableCell>
-        <TableCell>{row.Phone}</TableCell>
-        <TableCell>{row.Gender}</TableCell>
-        <TableCell>{row.Address}</TableCell>
+        <TableCell>{row[4] || "N/A"}</TableCell>
+        <TableCell>{row[8] || "N/A"}</TableCell>
+        <TableCell>{row[6] || "N/A"}</TableCell>
+        <TableCell>{row.Gender || "N/A"}</TableCell>
+        <TableCell>{row[3] || "N/A"}</TableCell>
       </TableRow>
       <TableRow>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={12}>
@@ -209,6 +212,7 @@ const rows = [
 
 export default function DataTable({ searchQuery }) {
   console.log(rows);
+  const { fileId } = useSelector(adminState);
   const filteredPatients = rows.filter((patient) => {
     const {
       firstName,
@@ -251,7 +255,25 @@ export default function DataTable({ searchQuery }) {
       String(VisitDate).toLowerCase().includes(lowerCaseQuery)
     );
   });
-
+  const {
+    data,
+    refetch,
+    fetchNextPage,
+    fetchPreviousPage,
+    fetchPage,
+    isFetching,
+    pagination,
+  } = usePaginationApi({
+    url: `/googledrive/get-spreadsheet`,
+    query: `&limit=10&spreadsheetId=${fileId}${
+      searchQuery ? `&name=${searchQuery}` : ""
+    }`,
+    queryKey: "patients",
+    body: {
+      method: "GET",
+    },
+  });
+  const patientData = data?.response?.results;
   return (
     <TableContainer component={Paper}>
       <Table aria-label="collapsible table">
@@ -269,8 +291,8 @@ export default function DataTable({ searchQuery }) {
           </TableRow>
         </TableHead>
         <TableBody>
-          {filteredPatients.map((row) => (
-            <Row key={row.name} row={row} />
+          {patientData?.slice(1)?.map((row, index) => (
+            <Row key={row.index} row={row} />
           ))}
         </TableBody>
       </Table>
