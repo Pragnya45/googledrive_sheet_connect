@@ -10,6 +10,12 @@ import Typography from "@mui/material/Typography";
 import { Container, Grid, TextField } from "@mui/material";
 import { useState } from "react";
 import IDGenerater from "../utils/IdGenerater";
+import useApi from "../hooks/useApi";
+import { useNavigate } from "react-router-dom";
+import { useNotification } from "../hooks/useNotification";
+import { useSelector } from "react-redux";
+import { adminState } from "../Redux/adminSlice";
+import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 
 const steps = [
   {
@@ -43,10 +49,12 @@ const steps = [
 ];
 
 export default function PatientForm() {
+  const navigate = useNavigate();
+  const { showMessage } = useNotification();
   const [activeStep, setActiveStep] = useState(0);
-
+  const { fileId } = useSelector(adminState);
   const [formData, setFormData] = useState({});
-
+  const { apiFn, loading } = useApi();
   const getAutoDetails = async () => {
     const DrId = await IDGenerater(290, "dr");
     const PatientID = await IDGenerater(344, "a12kj");
@@ -111,7 +119,7 @@ export default function PatientForm() {
 
     steps[activeStep].fields.forEach((fieldName) => {
       if (!formData[fieldName]) {
-        newErrors[fieldName] = "This field is required.";
+        newErrors[fieldName] = `${fieldName} is required.`;
         isValid = false;
       }
     });
@@ -120,31 +128,74 @@ export default function PatientForm() {
     return isValid;
   };
   console.log(formData);
-  const handleFinish = async () => {
-    const fieldMapping = {
+  const apiFieldMapping = {
+    "Patients Details": {
       "Patient Name (First, Last Name)": ["first_name", "last_name"],
+      Email: "email",
+      Location: "location",
+      Age: "age",
+      Gender: "gender",
+      Phone: "phone",
+      Address: "address",
+      "Patient ID": "patientId",
+    },
+    "Prescription Related Details": {
+      Prescription: "description",
+      Dose: "dose",
+      "Visit Date": "start_dt_time",
+      "Next Visit": "next_dt_time",
+    },
+    "Physician Details": {
+      "Physician ID": "physicianId",
       "Physician Name (First, Last Name)": [
-        "Physician_first_name",
-        "Physician_last_name",
+        "physician_first_name",
+        "physician_last_name",
       ],
-    };
+      "Physician Number": "pcp",
+      Bill: "bill",
+    },
+  };
+  const handleFinish = async () => {
+    let formattedData = {};
 
-    const renamedFormData = {};
+    // Iterate through each step
+    steps.forEach((step) => {
+      step.fields.forEach((fieldName) => {
+        const mappedField = apiFieldMapping[step.label][fieldName];
 
-    Object.keys(formData).forEach((oldField) => {
-      if (fieldMapping[oldField]) {
-        const [newField1, newField2] = fieldMapping[oldField];
-        const [firstName, lastName] = formData[oldField].split(" ");
-        renamedFormData[newField1] = firstName || "";
-        renamedFormData[newField2] = lastName || "";
-      } else {
-        renamedFormData[oldField] = formData[oldField];
-      }
+        if (mappedField) {
+          if (Array.isArray(mappedField)) {
+            // For fields like "First Name, Last Name"
+            const [firstName, lastName] = (formData[fieldName] || "").split(
+              " "
+            );
+            formattedData[mappedField[0]] = firstName || "";
+            formattedData[mappedField[1]] = lastName || "";
+          } else {
+            formattedData[mappedField] = formData[fieldName] || "";
+          }
+        }
+      });
     });
 
-    console.log(renamedFormData);
+    console.log(formattedData);
+    const { response, error } = await apiFn({
+      url: `/googledrive/add-patient?spreadsheetId=${fileId}`,
+      options: {
+        method: "POST",
+        body: formattedData,
+      },
+    });
+    if (response) {
+      showMessage({
+        type: "success",
+        value: "Patient Created",
+      });
+      navigate("/");
+      return;
+    }
   };
-
+  console.log(formData);
   return (
     <Box>
       <Stepper activeStep={activeStep} orientation="vertical" sx={{ ml: 5 }}>
@@ -159,10 +210,9 @@ export default function PatientForm() {
                 <Grid container spacing={2}>
                   {" "}
                   {/* Use Grid container */}
-                  {step.fields.map((fieldName) => (
+                  {/* {step.fields.map((fieldName) => (
                     <Grid item xs={4} key={fieldName}>
-                      {" "}
-                      {/* Define the number of items in one line */}
+                      
                       <TextField
                         id={fieldName}
                         label={fieldName}
@@ -173,7 +223,6 @@ export default function PatientForm() {
                         }
                         sx={{ mt: 2 }}
                         InputProps={{
-                          // eslint-disable-next-line no-unneeded-ternary
                           readOnly:
                             fieldName === "Patient ID" ||
                             fieldName === "Physician ID"
@@ -181,6 +230,67 @@ export default function PatientForm() {
                               : false,
                         }}
                       />
+                      <Typography style={{ color: "red" }}>
+                        {errors[fieldName]}
+                      </Typography>
+                    </Grid>
+                  ))} */}
+                  {step.fields.map((fieldName) => (
+                    <Grid item xs={4} key={fieldName}>
+                      {" "}
+                      {fieldName.toLowerCase() === "gender" ? (
+                        <FormControl
+                          variant="outlined"
+                          sx={{ mt: 2, minWidth: 120 }}
+                        >
+                          <InputLabel id={`${fieldName}-label`}>
+                            {fieldName}
+                          </InputLabel>
+                          <Select
+                            labelId={`${fieldName}-label`}
+                            id={fieldName}
+                            value={formData[fieldName] || ""}
+                            onChange={(event) =>
+                              handleInputChange(event, fieldName)
+                            }
+                            label={fieldName}
+                          >
+                            <MenuItem value="Male">Male</MenuItem>
+                            <MenuItem value="Female">Female</MenuItem>
+                          </Select>
+                        </FormControl>
+                      ) : (
+                        <TextField
+                          id={fieldName}
+                          label={fieldName}
+                          variant="outlined"
+                          type={
+                            fieldName.toLowerCase().includes("next visit") ||
+                            fieldName.toLowerCase().includes("visit date")
+                              ? "date"
+                              : "text"
+                          }
+                          value={formData[fieldName] || ""}
+                          onChange={(event) =>
+                            handleInputChange(event, fieldName)
+                          }
+                          sx={{ mt: 2 }}
+                          InputLabelProps={{
+                            shrink:
+                              fieldName.toLowerCase().includes("next visit") ||
+                              fieldName.toLowerCase().includes("visit date")
+                                ? true
+                                : undefined,
+                          }}
+                          InputProps={{
+                            readOnly:
+                              fieldName === "Patient ID" ||
+                              fieldName === "Physician ID"
+                                ? true
+                                : false,
+                          }}
+                        />
+                      )}
                       <Typography style={{ color: "red" }}>
                         {errors[fieldName]}
                       </Typography>

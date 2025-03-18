@@ -2,10 +2,10 @@ import { useState } from "react";
 import { env } from "../utils/env";
 import { getAuthToken } from "../utils/helper";
 
-const baseUrl = `${env.backendUrl}v1`;
+const baseUrl = `${env.backendUrl}`;
 
 function useApi() {
-  const [loading, setLoading] = useState < boolean > false;
+  const [loading, setLoading] = useState(false);
 
   const authToken = getAuthToken();
 
