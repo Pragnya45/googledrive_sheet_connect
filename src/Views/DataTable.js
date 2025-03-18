@@ -23,6 +23,11 @@ import { adminState } from "../Redux/adminSlice";
 import { useSelector } from "react-redux";
 import TablePagination from "../Components/TablePagination";
 import CircularProgress from "@mui/material/CircularProgress";
+import DeleteIcon from "@mui/icons-material/Delete";
+import Checkbox from "@mui/material/Checkbox";
+import useApi from "../hooks/useApi";
+import { useNotification } from "../hooks/useNotification";
+import DeletePopup from "../Components/DeletePopup";
 
 function createData(
   firstName,
@@ -63,76 +68,7 @@ function createData(
     VisitDate,
   };
 }
-
-function Row(props) {
-  const { row } = props;
-  const [open, setOpen] = React.useState(false);
-
-  return (
-    <>
-      <TableRow sx={{ "& > *": { borderBottom: "unset" } }}>
-        <TableCell>
-          <IconButton
-            aria-label="expand row"
-            size="small"
-            onClick={() => setOpen(!open)}
-          >
-            {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-          </IconButton>
-          <Link to="/edit-patient/3" state={row}>
-            <IconButton aria-label="expand row" size="small" title="Edit">
-              <EditIcon fontSize="small" />
-            </IconButton>
-          </Link>
-        </TableCell>
-        <TableCell>{row[0] || "N/A"}</TableCell>
-        <TableCell component="th" scope="row">
-          {row[1] + " " + row[2]}
-        </TableCell>
-        <TableCell>{row[4] || "N/A"}</TableCell>
-        <TableCell>{row[8] || "N/A"}</TableCell>
-        <TableCell>{row[6] || "N/A"}</TableCell>
-        <TableCell>{row.Gender || "N/A"}</TableCell>
-        <TableCell>{row[3] || "N/A"}</TableCell>
-      </TableRow>
-      <TableRow>
-        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={12}>
-          <Collapse in={open} timeout="auto" unmountOnExit>
-            <Box sx={{ margin: 1, m: 5 }}>
-              <Typography variant="h6" gutterBottom component="div">
-                Prescription and Physician Details
-              </Typography>
-              <Table size="small" aria-label="purchases">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Prescription</TableCell>
-                    <TableCell>Dose</TableCell>
-                    <TableCell>Physician name</TableCell>
-                    <TableCell>Physician number</TableCell>
-                    <TableCell>Bill</TableCell>
-                    <TableCell>Physician Id</TableCell>
-                    <TableCell>Visit date</TableCell>
-                    <TableCell>Next visit</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  <TableCell>{row.Prescription}</TableCell>
-                  <TableCell>{row.Dose}</TableCell>
-                  <TableCell>{`${row.PhysicianFirstName} ${row.PhysicianLastName}`}</TableCell>
-                  <TableCell>{row.PhysicianNumber}</TableCell>
-                  <TableCell>{row.Bill}</TableCell>
-                  <TableCell>{row.PhysicianID}</TableCell>
-                  <TableCell>{row.VisitDate}</TableCell>
-                  <TableCell>{row.NextVisit}</TableCell>
-                </TableBody>
-              </Table>
-            </Box>
-          </Collapse>
-        </TableCell>
-      </TableRow>
-    </>
-  );
-}
+const label = { inputProps: { "aria-label": "Checkbox demo" } };
 
 Row.propTypes = {
   row: PropTypes.shape({
@@ -211,52 +147,120 @@ const rows = [
     "Visit Date"
   ),
 ];
+function Row({ row, selectedItems, setSelectedItems }) {
+  const [open, setOpen] = React.useState(false);
+  const handleCheckboxChange = (event) => {
+    const isChecked = event.target.checked;
+    const orderId = row[0];
 
+    if (isChecked) {
+      setSelectedItems((prevSelectedItems) => [...prevSelectedItems, orderId]);
+    } else {
+      setSelectedItems((prevSelectedItems) =>
+        prevSelectedItems.filter((id) => id !== orderId)
+      );
+    }
+  };
+  return (
+    <>
+      <TableRow sx={{ "& > *": { borderBottom: "unset" } }}>
+        <TableCell>
+          <Checkbox
+            {...label}
+            checked={selectedItems.includes(row[0])}
+            onChange={handleCheckboxChange}
+          />
+          <IconButton
+            aria-label="expand row"
+            size="small"
+            onClick={() => setOpen(!open)}
+          >
+            {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+          </IconButton>
+          <Link to="/edit-patient/3" state={row}>
+            <IconButton aria-label="expand row" size="small" title="Edit">
+              <EditIcon fontSize="small" />
+            </IconButton>
+          </Link>
+        </TableCell>
+        <TableCell>{row[0] || "N/A"}</TableCell>
+        <TableCell component="th" scope="row">
+          {row[1] + " " + row[2]}
+        </TableCell>
+        <TableCell>{row[4] || "N/A"}</TableCell>
+        <TableCell>{row[8] || "N/A"}</TableCell>
+        <TableCell>{row[6] || "N/A"}</TableCell>
+        <TableCell>{row.Gender || "N/A"}</TableCell>
+        <TableCell>{row[3] || "N/A"}</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={12}>
+          <Collapse in={open} timeout="auto" unmountOnExit>
+            <Box sx={{ margin: 1, m: 5 }}>
+              <Typography variant="h6" gutterBottom component="div">
+                Prescription and Physician Details
+              </Typography>
+              <Table size="small" aria-label="purchases">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Prescription</TableCell>
+                    <TableCell>Dose</TableCell>
+                    <TableCell>Physician name</TableCell>
+                    <TableCell>Physician number</TableCell>
+                    <TableCell>Bill</TableCell>
+                    <TableCell>Physician Id</TableCell>
+                    <TableCell>Visit date</TableCell>
+                    <TableCell>Next visit</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  <TableCell>{row.Prescription}</TableCell>
+                  <TableCell>{row.Dose}</TableCell>
+                  <TableCell>{`${row.PhysicianFirstName} ${row.PhysicianLastName}`}</TableCell>
+                  <TableCell>{row.PhysicianNumber}</TableCell>
+                  <TableCell>{row.Bill}</TableCell>
+                  <TableCell>{row.PhysicianID}</TableCell>
+                  <TableCell>{row.VisitDate}</TableCell>
+                  <TableCell>{row.NextVisit}</TableCell>
+                </TableBody>
+              </Table>
+            </Box>
+          </Collapse>
+        </TableCell>
+      </TableRow>
+    </>
+  );
+}
 export default function DataTable({ searchQuery }) {
   console.log(rows);
   const { fileId } = useSelector(adminState);
-  const filteredPatients = rows.filter((patient) => {
-    const {
-      firstName,
-      lastName,
-      Location,
-      Age,
-      Phone,
-      Gender,
-      Address,
-      Prescription,
-      Dose,
-      PhysicianFirstName,
-      PhysicianLastName,
-      PhysicianNumber,
-      Bill,
-      NextVisit,
-      PhysicianID,
-      PatientID,
-      VisitDate,
-    } = patient;
-    const lowerCaseQuery = String(searchQuery).toLowerCase();
-
-    return (
-      String(firstName).toLowerCase().includes(lowerCaseQuery) ||
-      String(lastName).toLowerCase().includes(lowerCaseQuery) ||
-      String(Location).toLowerCase().includes(lowerCaseQuery) ||
-      String(Age).toLowerCase().includes(lowerCaseQuery) ||
-      String(Phone).toLowerCase().includes(lowerCaseQuery) ||
-      String(Gender).toLowerCase().includes(lowerCaseQuery) ||
-      String(Address).toLowerCase().includes(lowerCaseQuery) ||
-      String(Prescription).toLowerCase().includes(lowerCaseQuery) ||
-      String(Dose).toLowerCase().includes(lowerCaseQuery) ||
-      String(PhysicianFirstName).toLowerCase().includes(lowerCaseQuery) ||
-      String(PhysicianLastName).toLowerCase().includes(lowerCaseQuery) ||
-      String(PhysicianNumber).toLowerCase().includes(lowerCaseQuery) ||
-      String(Bill).toLowerCase().includes(lowerCaseQuery) ||
-      String(NextVisit).toLowerCase().includes(lowerCaseQuery) ||
-      String(PhysicianID).toLowerCase().includes(lowerCaseQuery) ||
-      String(PatientID).toLowerCase().includes(lowerCaseQuery) ||
-      String(VisitDate).toLowerCase().includes(lowerCaseQuery)
-    );
-  });
+  const [openDelete, setOpenDelete] = useState(false);
+  const [selectedItems, setSelectedItems] = useState([]);
+  const { showMessage } = useNotification();
+  const { apiFn, loading } = useApi();
+  const handleDelete = async () => {
+    const { response, error } = await apiFn({
+      url: `/googledrive/delete-patient?spreadsheetId=${fileId}`,
+      options: {
+        method: "DELETE",
+        body: { ids: selectedItems },
+      },
+    });
+    if (error) {
+      showMessage({
+        type: "error",
+        value: error,
+      });
+      return;
+    }
+    showMessage({
+      type: "success",
+      value: "Patients Deleted",
+    });
+    refetch();
+    setOpenDelete(false);
+    return;
+  };
   const {
     data,
     refetch,
@@ -277,8 +281,36 @@ export default function DataTable({ searchQuery }) {
     enabled: true,
   });
   const patientData = data?.response?.results;
+  console.log("patientData:", patientData);
+  const handleSelectAllChange = (event) => {
+    const isChecked = event.target.checked;
+    if (isChecked) {
+      const allOrderIds = patientData.map((row) => row[0]);
+      setSelectedItems(allOrderIds);
+    } else {
+      setSelectedItems([]);
+    }
+  };
+  const isAllSelected = selectedItems.length === patientData?.length;
   return (
     <TableContainer component={Paper}>
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <Checkbox
+          {...label}
+          checked={isAllSelected}
+          onChange={handleSelectAllChange}
+        />
+        <p>Select All</p>
+        <div
+          onClick={() => {
+            if (selectedItems.length > 0) {
+              setOpenDelete(true);
+            }
+          }}
+        >
+          <DeleteIcon fontSize="small" color="error" />
+        </div>
+      </div>
       <Table aria-label="collapsible table">
         <TableHead>
           <TableRow>
@@ -300,8 +332,15 @@ export default function DataTable({ searchQuery }) {
                 <CircularProgress color="black" />
               </TableCell>
             </TableRow>
-          ) : patientData && patientData.length ? (
-            patientData?.map((row, index) => <Row key={index} row={row} />)
+          ) : Array.isArray(patientData) && patientData.length > 0 ? (
+            patientData?.map((row, index) => (
+              <Row
+                key={index}
+                row={row}
+                selectedItems={selectedItems}
+                setSelectedItems={setSelectedItems}
+              />
+            ))
           ) : (
             <TableRow>
               <TableCell colSpan={8}>No data Available </TableCell>
@@ -309,7 +348,7 @@ export default function DataTable({ searchQuery }) {
           )}
         </TableBody>
       </Table>
-      {Array.isArray(patientData) && patientData?.length ? (
+      {Array.isArray(patientData) && patientData.length > 0 ? (
         <TablePagination
           fetchNextPage={fetchNextPage}
           fetchPreviousPage={fetchPreviousPage}
@@ -317,6 +356,14 @@ export default function DataTable({ searchQuery }) {
           pagination={pagination}
         />
       ) : null}
+      {openDelete && (
+        <DeletePopup
+          message="Are you sure you want to delete selected patients?"
+          loading={loading}
+          handleClose={() => setOpenDelete(false)}
+          handleConfirm={handleDelete}
+        />
+      )}
     </TableContainer>
   );
 }

@@ -1,6 +1,6 @@
 import axios from "axios";
 import { env } from "../utils/env";
-import { getAuthToken } from "../utils/helper";
+import { getAuthToken, logOut } from "../utils/helper";
 
 const baseUrl = env.backendUrl;
 
@@ -24,6 +24,9 @@ export const handleApi = async ({ url, body, query }) => {
     };
   } catch (error) {
     console.error(error);
+    if (error?.response?.status === 500) {
+      logOut();
+    }
     return {
       error,
       response: null,
