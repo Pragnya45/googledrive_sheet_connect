@@ -88,8 +88,6 @@ export default function GoogleDrivePage() {
       return;
     }
 
-    const oauthToken = token; // Use the stored token from Redux
-
     window.gapi.load("picker", () => {
       console.log("Google Picker API loaded");
 
