@@ -16,6 +16,7 @@ import { useNotification } from "../hooks/useNotification";
 import { useSelector } from "react-redux";
 import { adminState } from "../Redux/adminSlice";
 import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import { useQueryApi } from "../hooks/useQueryApi";
 
 const steps = [
   {
@@ -55,15 +56,43 @@ export default function PatientForm() {
   const { fileId } = useSelector(adminState);
   const [formData, setFormData] = useState({});
   const { apiFn, loading } = useApi();
+  const { data: field, isFetching } = useQueryApi({
+    url: `/googledrive/get-spreadsheet?spreadsheetId=${fileId}`,
+    queryKey: "configField",
+    enabled: true,
+  });
+  console.log();
+  const patientData = field?.response;
   const getAutoDetails = async () => {
-    const DrId = await IDGenerater(290, "dr");
-    const PatientID = await IDGenerater(344, "a12kj");
-    formData["Physician ID"] = DrId || "";
-    formData["Patient ID"] = PatientID || "";
+    // Get the last patient and physician IDs from patientData
+    const lastPatient = patientData?.length
+      ? patientData[patientData.length - 1]["Patient ID"]
+      : null;
+    const lastPhysician = patientData?.length
+      ? patientData[patientData.length - 1]["Physician ID"]
+      : null;
+
+    // Generate next IDs based on the last available IDs
+    const PatientID = await IDGenerater(getNextNumber(lastPatient), "a12kj");
+    const DrId = await IDGenerater(getNextNumber(lastPhysician), "dr");
+
+    // Set the new IDs to formData
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      "Physician ID": DrId || "",
+      "Patient ID": PatientID || "",
+    }));
   };
+
+  function getNextNumber(lastId) {
+    if (!lastId) return 1;
+    const match = lastId.match(/\d+$/);
+    const lastNumber = match ? parseInt(match[0], 10) : 0;
+    return lastNumber + 1;
+  }
   React.useEffect(() => {
     getAutoDetails();
-  }, []);
+  }, [patientData]);
 
   const [errors, setErrors] = useState({});
 

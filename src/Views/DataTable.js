@@ -14,10 +14,9 @@ import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import { Button, TextField } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { usePaginationApi } from "../hooks/usePaginationApi";
 import { adminState } from "../Redux/adminSlice";
 import { useSelector } from "react-redux";
@@ -28,6 +27,9 @@ import Checkbox from "@mui/material/Checkbox";
 import useApi from "../hooks/useApi";
 import { useNotification } from "../hooks/useNotification";
 import DeletePopup from "../Components/DeletePopup";
+import Button from "@mui/material/Button";
+import { useNavigate } from "react-router-dom";
+import { Stack } from "@mui/material";
 
 function createData(
   firstName,
@@ -231,15 +233,20 @@ function Row({ row, selectedItems, setSelectedItems }) {
     </>
   );
 }
-export default function DataTable({ searchQuery }) {
+export default function DataTable({
+  searchQuery,
+  patientData,
+  isFetching,
+  refetch,
+}) {
   console.log(rows);
-  const { fileId } = useSelector(adminState);
+  const { fileId, token } = useSelector(adminState);
   const [openDelete, setOpenDelete] = useState(false);
   const [selectedItems, setSelectedItems] = useState([]);
   const { showMessage } = useNotification();
   const { apiFn, loading } = useApi();
   const handleDelete = async () => {
-    const { response, error } = await apiFn({
+    const { error } = await apiFn({
       url: `/googledrive/delete-patient?spreadsheetId=${fileId}`,
       options: {
         method: "DELETE",
@@ -261,26 +268,8 @@ export default function DataTable({ searchQuery }) {
     setOpenDelete(false);
     return;
   };
-  const {
-    data,
-    refetch,
-    fetchNextPage,
-    fetchPreviousPage,
-    fetchPage,
-    isFetching,
-    pagination,
-  } = usePaginationApi({
-    url: `/googledrive/get-spreadsheet`,
-    query: `&limit=10&spreadsheetId=${fileId}${
-      searchQuery ? `&name=${searchQuery}` : ""
-    }`,
-    queryKey: "patients" + searchQuery,
-    body: {
-      method: "GET",
-    },
-    enabled: true,
-  });
-  const patientData = data?.response?.results;
+  const navigate = useNavigate();
+
   console.log("patientData:", patientData);
   const handleSelectAllChange = (event) => {
     const isChecked = event.target.checked;
@@ -293,36 +282,146 @@ export default function DataTable({ searchQuery }) {
   };
   const isAllSelected = selectedItems.length === patientData?.length;
   return (
-    <TableContainer component={Paper}>
-      <div style={{ display: "flex", alignItems: "center" }}>
-        <Checkbox
-          {...label}
-          checked={isAllSelected}
-          onChange={handleSelectAllChange}
-        />
-        <p>Select All</p>
-        <div
-          onClick={() => {
-            if (selectedItems.length > 0) {
-              setOpenDelete(true);
-            }
-          }}
+    <TableContainer
+      component={Paper}
+      sx={{
+        backgroundColor: "#273142",
+        border: "1px solid #313D4F",
+        borderRadius: "10px",
+        padding: "20px",
+        width: "100%",
+      }}
+    >
+      <Stack direction="row" justifyContent="space-between">
+        <Typography
+          sx={{ color: "white", fontSize: "18px", fontWeight: "700" }}
         >
-          <DeleteIcon fontSize="small" color="error" />
+          Patient List
+        </Typography>
+        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+          <Checkbox
+            {...label}
+            sx={{
+              color: "white",
+            }}
+            checked={isAllSelected}
+            onChange={handleSelectAllChange}
+          />
+          <Typography
+            sx={{
+              color: "white",
+              fontWeight: "400",
+            }}
+          >
+            Select All
+          </Typography>
+
+          <Button
+            variant="contained"
+            sx={{ backgroundColor: "#4880FF", borderRadius: "6px" }}
+            onClick={() => navigate("/create-patient")}
+          >
+            Add Patient
+          </Button>
+          <div
+            onClick={() => {
+              if (selectedItems.length > 0) {
+                setOpenDelete(true);
+              }
+            }}
+          >
+            <DeleteIcon fontSize="small" color="error" />
+          </div>
         </div>
-      </div>
+      </Stack>
       <Table aria-label="collapsible table">
         <TableHead>
           <TableRow>
-            <TableCell>Actions</TableCell>
-            <TableCell>Patient Id</TableCell>
+            <TableCell
+              sx={{
+                backgroundColor: "#323D4E",
+                borderTopLeftRadius: "15px",
+                borderBottomLeftRadius: "15px",
+                color: "white",
+                fontSize: "14px",
+                fontWeight: "800",
+              }}
+            >
+              Actions
+            </TableCell>
+            <TableCell
+              sx={{
+                backgroundColor: "#323D4E",
+                color: "white",
+                fontSize: "14px",
+                fontWeight: "800",
+              }}
+            >
+              Patient Id
+            </TableCell>
 
-            <TableCell>Patient name</TableCell>
-            <TableCell>Location</TableCell>
-            <TableCell>Age</TableCell>
-            <TableCell>Phone</TableCell>
-            <TableCell>Gender</TableCell>
-            <TableCell>Address</TableCell>
+            <TableCell
+              sx={{
+                backgroundColor: "#323D4E",
+                color: "white",
+                fontSize: "14px",
+                fontWeight: "800",
+              }}
+            >
+              Patient name
+            </TableCell>
+            <TableCell
+              sx={{
+                backgroundColor: "#323D4E",
+                color: "white",
+                fontSize: "14px",
+                fontWeight: "800",
+              }}
+            >
+              Location
+            </TableCell>
+            <TableCell
+              sx={{
+                backgroundColor: "#323D4E",
+                color: "white",
+                fontSize: "14px",
+                fontWeight: "800",
+              }}
+            >
+              Age
+            </TableCell>
+            <TableCell
+              sx={{
+                backgroundColor: "#323D4E",
+                color: "white",
+                fontSize: "14px",
+                fontWeight: "800",
+              }}
+            >
+              Phone
+            </TableCell>
+            <TableCell
+              sx={{
+                backgroundColor: "#323D4E",
+                color: "white",
+                fontSize: "14px",
+                fontWeight: "800",
+              }}
+            >
+              Gender
+            </TableCell>
+            <TableCell
+              sx={{
+                backgroundColor: "#323D4E",
+                borderTopRightRadius: "15px",
+                borderBottomRightRadius: "15px",
+                color: "white",
+                fontSize: "14px",
+                fontWeight: "800",
+              }}
+            >
+              Address
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -343,19 +442,20 @@ export default function DataTable({ searchQuery }) {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={8}>No data Available </TableCell>
+              <TableCell
+                colSpan={8}
+                align="center"
+                sx={{ color: "white", fontSize: "18px" }}
+              >
+                {token
+                  ? ` No data Available{" "}`
+                  : "Go to Select FIle page for login"}
+              </TableCell>
             </TableRow>
           )}
         </TableBody>
       </Table>
-      {Array.isArray(patientData) && patientData.length > 0 ? (
-        <TablePagination
-          fetchNextPage={fetchNextPage}
-          fetchPreviousPage={fetchPreviousPage}
-          fetchPage={fetchPage}
-          pagination={pagination}
-        />
-      ) : null}
+
       {openDelete && (
         <DeletePopup
           message="Are you sure you want to delete selected patients?"

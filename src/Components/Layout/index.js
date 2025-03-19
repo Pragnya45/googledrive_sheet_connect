@@ -13,21 +13,19 @@ const APP_BAR_DESKTOP = 92;
 
 const StyledRoot = styled("div")({
   display: "flex",
-  minHeight: "100%",
+  height: "100vh",
   overflow: "hidden",
 });
 
 const Main = styled("div")(({ theme }) => ({
-  flexGrow: 1,
+  // flexGrow: 1,
+  width: "100%",
   overflow: "auto",
-  minHeight: "100%",
-  paddingTop: APP_BAR_MOBILE + 24,
+  minHeight: "100vh",
+  padding: "24px",
+  overflowY: "auto",
   paddingBottom: theme.spacing(10),
-  [theme.breakpoints.up("lg")]: {
-    paddingTop: APP_BAR_DESKTOP + 24,
-    paddingLeft: theme.spacing(2),
-    paddingRight: theme.spacing(2),
-  },
+  backgroundColor: "#141420",
 }));
 
 // ----------------------------------------------------------------------
@@ -37,11 +35,31 @@ export default function Layout() {
 
   return (
     <StyledRoot>
-      <Header onOpenNav={() => setOpen(true)} />
-      <Sidebar openNav={open} onCloseNav={() => setOpen(false)} />
-      <Main>
-        <Outlet />
-      </Main>
+      {/* <Header onOpenNav={() => setOpen(true)} /> */}
+      <div
+        style={{
+          display: "flex",
+          height: "100%",
+          flexGrow: 1,
+          overflow: "hidden",
+        }}
+      >
+        <Sidebar openNav={open} onCloseNav={() => setOpen(false)} />
+        <div
+          style={{
+            // flexGrow: 1,
+            width: "100%",
+            overflow: "auto",
+            minHeight: "100vh",
+            padding: "24px",
+            overflowY: "auto",
+            paddingBottom: "40px",
+            backgroundColor: "#141420",
+          }}
+        >
+          <Outlet />
+        </div>
+      </div>
     </StyledRoot>
   );
 }

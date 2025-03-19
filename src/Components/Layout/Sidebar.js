@@ -48,7 +48,7 @@ const navConfig = [
     icon: icon("ic_user"),
   },
 ];
-const NAV_WIDTH = 280;
+const NAV_WIDTH = 250;
 
 const StyledAccount = styled("div")(({ theme }) => ({
   display: "flex",
@@ -98,11 +98,14 @@ export default function Sidebar({ openNav, onCloseNav }) {
             <Avatar src={avatar} alt="photoURL" />
 
             <Box sx={{ ml: 2 }}>
-              <Typography variant="subtitle2" sx={{ color: "text.primary" }}>
+              <Typography
+                variant="subtitle2"
+                sx={{ color: "white", fontWeight: 700 }}
+              >
                 Joy
               </Typography>
 
-              <Typography variant="body2" sx={{ color: "text.secondary" }}>
+              <Typography variant="body2" sx={{ color: "white" }}>
                 Admin
               </Typography>
             </Box>
@@ -120,6 +123,7 @@ export default function Sidebar({ openNav, onCloseNav }) {
       sx={{
         flexShrink: { lg: 0 },
         width: { lg: NAV_WIDTH },
+        background: "#2E2E49",
       }}
     >
       {isDesktop ? (
@@ -129,7 +133,7 @@ export default function Sidebar({ openNav, onCloseNav }) {
           PaperProps={{
             sx: {
               width: NAV_WIDTH,
-              bgcolor: "background.default",
+              bgcolor: "#2E2E49",
               borderRightStyle: "dashed",
             },
           }}
@@ -145,6 +149,7 @@ export default function Sidebar({ openNav, onCloseNav }) {
           }}
           PaperProps={{
             sx: { width: NAV_WIDTH },
+            bgcolor: "#2E2E49",
           }}
         >
           {renderContent}

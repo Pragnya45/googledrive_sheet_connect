@@ -1,13 +1,5 @@
-import logo from "./logo.svg";
 import "./App.css";
-import AddPatientsPage from "./pages/AddPatientsPage";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  useNavigate,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Patients from "./pages/Patients";
 import Layout from "./Components/Layout";
 import { HelmetProvider } from "react-helmet-async";

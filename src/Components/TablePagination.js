@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import ArrowBackIosRoundedIcon from "@mui/icons-material/ArrowBackIosRounded";
 import ArrowForwardIosRoundedIcon from "@mui/icons-material/ArrowForwardIosRounded";
 
@@ -12,7 +12,6 @@ export default function TablePagination({
 }) {
   const totalPages = pagination?.totalPages || 1;
   const [page, setPage] = useState(pagination?.page || 1);
-  const [limit, setLimit] = useState(10);
 
   const handleClick = (pageNumber) => {
     if (pageNumber && pageNumber !== page) {
@@ -20,15 +19,7 @@ export default function TablePagination({
       fetchPage(pageNumber);
     }
   };
-  const handleLimitChange = (e) => {
-    updateLimit(e.target.value);
-  };
-  const updateLimit = (newLimit) => {
-    setLimit(newLimit);
-    fetchPage(1);
-    onLimitChange?.(newLimit);
-    refetch();
-  };
+
   const handlePrevClick = () => {
     if (page > 1) {
       fetchPreviousPage();
@@ -42,7 +33,6 @@ export default function TablePagination({
     }
   };
   const getPageNumbers = () => {
-    const displayPages = 5;
     const pages = [1];
     let startPage = Math.max(2, page - 2);
     let endPage = Math.min(totalPages - 1, page + 2);

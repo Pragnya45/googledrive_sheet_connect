@@ -1,9 +1,9 @@
-import PropTypes from 'prop-types';
-import { NavLink as RouterLink } from 'react-router-dom';
+import PropTypes from "prop-types";
+import { NavLink as RouterLink } from "react-router-dom";
 // @mui
-import { Box, List, ListItemText } from '@mui/material';
+import { Box, List, ListItemText } from "@mui/material";
 //
-import { StyledNavItem, StyledNavItemIcon } from './styles';
+import { StyledNavItem, StyledNavItemIcon } from "./styles";
 
 // ----------------------------------------------------------------------
 
@@ -37,10 +37,19 @@ function NavItem({ item }) {
       component={RouterLink}
       to={path}
       sx={{
-        '&.active': {
-          color: 'text.primary',
-          bgcolor: 'action.selected',
-          fontWeight: 'fontWeightBold',
+        color: "white", // Set default color
+        bgcolor: "transparent", // Optional background color
+        fontWeight: "400", // Default font weight
+        marginLeft: 1,
+        marginRight: 1,
+        "&:hover": {
+          bgcolor: "action.hover",
+          fontWeight: "700",
+        },
+        "&.active": {
+          color: "white",
+          bgcolor: "#4880FF",
+          fontWeight: "fontWeightBold",
         },
       }}
     >
