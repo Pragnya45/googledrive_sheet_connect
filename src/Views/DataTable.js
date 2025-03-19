@@ -177,7 +177,7 @@ function Row({ row, selectedItems, setSelectedItems }) {
           >
             {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
           </IconButton>
-          <Link to="/edit-patient/3" state={row}>
+          <Link to={`/edit-patient/${row[0]}`} state={row}>
             <IconButton aria-label="expand row" size="small" title="Edit">
               <EditIcon fontSize="small" />
             </IconButton>

@@ -15,7 +15,7 @@ export const handleApi = async ({ url, body, query }) => {
         Authorization: authToken ? "Bearer " + authToken : undefined,
       },
     });
-
+    console.log(response);
     const result = await response.data;
 
     return {

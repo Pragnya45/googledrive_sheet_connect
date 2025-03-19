@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useEffect } from "react";
 import Box from "@mui/material/Box";
 import Stepper from "@mui/material/Stepper";
 import Step from "@mui/material/Step";
@@ -10,6 +10,14 @@ import Typography from "@mui/material/Typography";
 import { Container, Grid, Stack, TextField } from "@mui/material";
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { useQueryApi } from "../hooks/useQueryApi";
+import { useSelector } from "react-redux";
+import { adminState } from "../Redux/adminSlice";
+import { useNavigate } from "react-router-dom";
+import { useNotification } from "../hooks/useNotification";
+import useApi from "../hooks/useApi";
+import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 
 const steps = [
   {
@@ -44,34 +52,66 @@ const steps = [
 ];
 
 export default function EditPatientPage() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { showMessage } = useNotification();
   const [activeStep, setActiveStep] = useState(0);
-
+  const [errors, setErrors] = useState({});
+  const { fileId } = useSelector(adminState);
+  const { apiFn, loading } = useApi();
   const [formData, setFormData] = useState({});
 
   const location = useLocation().state;
 
-  React.useEffect(() => {
-    const data = {
-      "Patient Name (First, Last Name)": `${location?.firstName} ${location?.lastName}`,
-      Location: location?.Location,
-      Age: location?.Age,
-      Gender: location?.Gender,
-      Phone: location?.Phone,
-      Address: location?.Address,
-      Prescription: location?.Prescription,
-      Dose: location?.Dose,
-      "Visit Date": location?.VisitDate,
-      "Next Visit": location?.NextVisit,
-      "Physician ID": location?.PhysicianID,
-      "Physician Name (First, Last Name)": `${location?.PhysicianFirstName} ${location?.PhysicianLastName}`,
-      "Physician Number": location?.PhysicianNumber,
-      Bill: location?.Bill,
-      "Patient ID": location?.PatientID,
+  const { data: field, isFetching } = useQueryApi({
+    url: `/googledrive/get-patient?spreadsheetId=${fileId}&patientId=${id}`,
+    queryKey: "configField" + id,
+    enabled: true,
+  });
+  const data = field?.response;
+  console.log(data);
+  // React.useEffect(() => {
+  //   const data = {
+  //     "Patient Name (First, Last Name)": `${location?.firstName} ${location?.lastName}`,
+  //     Location: location?.Location,
+  //     Age: location?.Age,
+  //     Gender: location?.Gender,
+  //     Phone: location?.Phone,
+  //     Address: location?.Address,
+  //     Prescription: location?.Prescription,
+  //     Dose: location?.Dose,
+  //     "Visit Date": location?.VisitDate,
+  //     "Next Visit": location?.NextVisit,
+  //     "Physician ID": location?.PhysicianID,
+  //     "Physician Name (First, Last Name)": `${location?.PhysicianFirstName} ${location?.PhysicianLastName}`,
+  //     "Physician Number": location?.PhysicianNumber,
+  //     Bill: location?.Bill,
+  //     "Patient ID": location?.PatientID,
+  //   };
+  //   setFormData(data);
+  // }, [location]);
+  useEffect(() => {
+    const formDataFromApi = {
+      "Patient Name (First, Last Name)": `${data?.first_name} ${data?.last_name}`,
+      Email: data?.email,
+      Location: data?.location,
+      Age: data?.age,
+      Gender: data?.gender,
+      Phone: data?.phone,
+      Address: data?.address,
+      Prescription: data?.description,
+      Dose: data?.dose,
+      "Visit Date": data?.start_dt_time,
+      "Next Visit": data?.next_dt_time,
+      "Physician ID": data?.physicianId || "345",
+      "Physician Name (First, Last Name)": `${data?.physician_first_name} ${data?.physician_last_name}`,
+      "Physician Number": data?.pcp,
+      Bill: data?.bill,
+      "Patient ID": data?.patientId,
     };
-    setFormData(data);
-  }, [location]);
 
-  const [errors, setErrors] = useState({});
+    setFormData(formDataFromApi);
+  }, [data]);
 
   const handleNext = () => {
     // Validate the fields before proceeding to the next step
@@ -131,7 +171,7 @@ export default function EditPatientPage() {
 
     steps[activeStep].fields.forEach((fieldName) => {
       if (!formData[fieldName]) {
-        newErrors[fieldName] = "This field is required.";
+        newErrors[fieldName] = `${fieldName} is required.`;
         isValid = false;
       }
     });
@@ -140,55 +180,74 @@ export default function EditPatientPage() {
     return isValid;
   };
   console.log(formData);
-  const handleFinish = () => {
-    const fieldMapping = {
+
+  const apiFieldMapping = {
+    "Patients Details": {
       "Patient Name (First, Last Name)": ["first_name", "last_name"],
+      Email: "email",
+      Location: "location",
+      Age: "age",
+      Gender: "gender",
+      Phone: "phone",
+      Address: "address",
+      "Patient ID": "patientId",
+    },
+    "Prescription Related Details": {
+      Prescription: "description",
+      Dose: "dose",
+      "Visit Date": "start_dt_time",
+      "Next Visit": "next_dt_time",
+    },
+    "Physician Details": {
+      "Physician ID": "physicianId",
       "Physician Name (First, Last Name)": [
-        "Physician_first_name",
-        "Physician_last_name",
+        "physician_first_name",
+        "physician_last_name",
       ],
-    };
+      "Physician Number": "pcp",
+      Bill: "bill",
+    },
+  };
+  const handleFinish = async () => {
+    let formattedData = {};
 
-    const renamedFormData = {};
+    // Iterate through each step
+    steps.forEach((step) => {
+      step.fields.forEach((fieldName) => {
+        const mappedField = apiFieldMapping[step.label][fieldName];
 
-    Object.keys(formData).forEach((oldField) => {
-      if (fieldMapping[oldField]) {
-        const [newField1, newField2] = fieldMapping[oldField];
-        const [firstName, lastName] = formData[oldField].split(" ");
-        renamedFormData[newField1] = firstName || "";
-        renamedFormData[newField2] = lastName || "";
-      } else {
-        renamedFormData[oldField] = formData[oldField];
-      }
+        if (mappedField) {
+          if (Array.isArray(mappedField)) {
+            // For fields like "First Name, Last Name"
+            const [firstName, lastName] = (formData[fieldName] || "").split(
+              " "
+            );
+            formattedData[mappedField[0]] = firstName || "";
+            formattedData[mappedField[1]] = lastName || "";
+          } else {
+            formattedData[mappedField] = formData[fieldName] || "";
+          }
+        }
+      });
     });
 
-    console.log(renamedFormData);
+    console.log(formattedData);
 
-    // const apiEndpoint = 'YOUR_API_ENDPOINT';
-
-    // // Make a POST request to the API
-    // fetch(apiEndpoint, {
-    //     method: 'POST',
-    //     headers: {
-    //         'Content-Type': 'application/json', // Set the content type to JSON
-    //     },
-    //     body: JSON.stringify(formData), // Convert data to JSON format
-    // })
-    //     .then((response) => {
-    //         if (!response.ok) {
-    //             throw new Error('Network response was not ok');
-    //         }
-    //         return response.json();
-    //     })
-    //     .then((data) => {
-    //         // Handle the API response data here if needed
-    //         console.log(data);
-    //     })
-    //     .catch((error) => {
-    //         // Handle any errors that occur during the fetch
-    //         console.error('Error:', error);
-    //     });
-    // }
+    const { response, error } = await apiFn({
+      url: `/googledrive/edit-patient?spreadsheetId=${fileId}&patientId=${id}`,
+      options: {
+        method: "PUT",
+        body: formattedData,
+      },
+    });
+    if (response) {
+      showMessage({
+        type: "success",
+        value: "Patient Updated",
+      });
+      navigate("/");
+      return;
+    }
   };
 
   return (
@@ -219,25 +278,61 @@ export default function EditPatientPage() {
                     {step.fields.map((fieldName) => (
                       <Grid item xs={4} key={fieldName}>
                         {" "}
-                        {/* Define the number of items in one line */}
-                        <TextField
-                          id={fieldName}
-                          label={fieldName}
-                          variant="outlined"
-                          value={formData[fieldName] || ""}
-                          onChange={(event) =>
-                            handleInputChange(event, fieldName)
-                          }
-                          InputProps={{
-                            // eslint-disable-next-line no-unneeded-ternary
-                            readOnly:
-                              fieldName === "Patient ID" ||
-                              fieldName === "Physician ID"
-                                ? true
-                                : false,
-                          }}
-                          sx={{ mt: 2 }}
-                        />
+                        {fieldName.toLowerCase() === "gender" ? (
+                          <FormControl
+                            variant="outlined"
+                            sx={{ mt: 2, minWidth: 120 }}
+                          >
+                            <InputLabel id={`${fieldName}-label`}>
+                              {fieldName}
+                            </InputLabel>
+                            <Select
+                              labelId={`${fieldName}-label`}
+                              id={fieldName}
+                              value={formData[fieldName] || ""}
+                              onChange={(event) =>
+                                handleInputChange(event, fieldName)
+                              }
+                              label={fieldName}
+                            >
+                              <MenuItem value="Male">Male</MenuItem>
+                              <MenuItem value="Female">Female</MenuItem>
+                            </Select>
+                          </FormControl>
+                        ) : (
+                          <TextField
+                            id={fieldName}
+                            label={fieldName}
+                            variant="outlined"
+                            type={
+                              fieldName.toLowerCase().includes("next visit") ||
+                              fieldName.toLowerCase().includes("visit date")
+                                ? "date"
+                                : "text"
+                            }
+                            value={formData[fieldName] || ""}
+                            onChange={(event) =>
+                              handleInputChange(event, fieldName)
+                            }
+                            sx={{ mt: 2 }}
+                            InputLabelProps={{
+                              shrink:
+                                fieldName
+                                  .toLowerCase()
+                                  .includes("next visit") ||
+                                fieldName.toLowerCase().includes("visit date")
+                                  ? true
+                                  : undefined,
+                            }}
+                            InputProps={{
+                              readOnly:
+                                fieldName === "Patient ID" ||
+                                fieldName === "Physician ID"
+                                  ? true
+                                  : false,
+                            }}
+                          />
+                        )}
                         <Typography style={{ color: "red" }}>
                           {errors[fieldName]}
                         </Typography>
