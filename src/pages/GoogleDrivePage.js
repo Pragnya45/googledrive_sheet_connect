@@ -105,6 +105,7 @@ export default function GoogleDrivePage() {
             alignItems="center"
             justifyContent="space-between"
             mb={5}
+            mt={7}
           >
             <Typography
               variant="h4"
