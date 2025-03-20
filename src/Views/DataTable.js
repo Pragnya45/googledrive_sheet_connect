@@ -211,7 +211,7 @@ function Row({ row, selectedItems, setSelectedItems }) {
           scope="row"
           sx={{ color: "white", borderBottom: "none" }}
         >
-          {row[1] + " " + row[2]}
+          {row[1] || ""} {row[2] || ""}
         </TableCell>
 
         <TableCell sx={{ color: "white", borderBottom: "none" }}>

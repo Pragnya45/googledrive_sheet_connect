@@ -4,6 +4,7 @@ import { Navigate } from "react-router-dom";
 
 export default function PrivateRoute({ children }) {
   const authenticated = useSelector(adminState)?.token;
+  const { fileId } = useSelector(adminState);
 
-  return authenticated ? children : <Navigate to="/select-file" />;
+  return authenticated && fileId ? children : <Navigate to="/select-file" />;
 }
