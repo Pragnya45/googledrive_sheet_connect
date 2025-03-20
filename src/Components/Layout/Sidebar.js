@@ -1,23 +1,17 @@
 import PropTypes from "prop-types";
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-// @mui
 import { styled, alpha } from "@mui/material/styles";
 import { Box, Link, Drawer, Typography, Avatar } from "@mui/material";
-// mock
-// hooks
 import useResponsive from "../../hooks/useResponsive";
-// components
 //import Logo from "../../../components/logo";
 import Scrollbar from "../scrollbar";
 import NavSection from "../nav-section/NavSection";
-//
 import avatar from "../../assets/images/avatars/avatar_default.jpg";
-// ----------------------------------------------------------------------
-// component
 import SvgColor from "../svg-color";
-
-// ----------------------------------------------------------------------
+import { adminLogoutFn } from "../../Redux/logoutSlice";
+import { useSelector, useDispatch } from "react-redux";
+import Button from "@mui/material/Button";
 
 const icon = (name) => (
   <SvgColor
@@ -52,7 +46,7 @@ const NAV_WIDTH = 250;
 
 const StyledAccount = styled("div")(({ theme }) => ({
   display: "flex",
-  alignItems: "center",
+  alignItems: "start",
   padding: theme.spacing(2, 2.5),
   borderRadius: Number(theme.shape.borderRadius) * 1.5,
   backgroundColor: alpha(theme.palette.grey[500], 0.12),
@@ -67,9 +61,13 @@ Sidebar.propTypes = {
 
 export default function Sidebar({ openNav, onCloseNav }) {
   const { pathname } = useLocation();
+  const dispatch = useDispatch();
 
   const isDesktop = useResponsive("up", "lg");
-
+  function signOut() {
+    console.log("Signing out...");
+    dispatch(adminLogoutFn()); // Clear token from Redux
+  }
   useEffect(() => {
     if (openNav) {
       onCloseNav();
@@ -108,6 +106,19 @@ export default function Sidebar({ openNav, onCloseNav }) {
               <Typography variant="body2" sx={{ color: "white" }}>
                 Admin
               </Typography>
+              <Button
+                variant="outlined"
+                style={{
+                  border: "none",
+                  textAlign: "left",
+                  alignItems: "flex-start",
+                  padding: 0,
+                  fontWeight: "600",
+                }}
+                onClick={signOut}
+              >
+                Sign Out
+              </Button>
             </Box>
           </StyledAccount>
         </Link>

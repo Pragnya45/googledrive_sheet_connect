@@ -303,7 +303,7 @@ export default function PatientForm() {
                           onChange={(event) =>
                             handleInputChange(event, fieldName)
                           }
-                          sx={{ mt: 2 }}
+                          sx={{ mt: 2, color: "white" }}
                           InputLabelProps={{
                             shrink:
                               fieldName.toLowerCase().includes("next visit") ||

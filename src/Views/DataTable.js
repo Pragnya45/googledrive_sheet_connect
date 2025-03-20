@@ -165,65 +165,94 @@ function Row({ row, selectedItems, setSelectedItems }) {
   };
   return (
     <>
-      <TableRow sx={{ "& > *": { borderBottom: "unset" } }}>
-        <TableCell>
+      <TableRow
+        sx={{
+          "& > *": { borderBottom: "unset" },
+          "&:not(:last-child)": {
+            borderBottom: "1px solid #4D5C6B", // Light border for all rows except last row
+          },
+        }}
+      >
+        <TableCell sx={{ display: "flex", alignItems: "center", gap: 0 }}>
           <Checkbox
             {...label}
             checked={selectedItems.includes(row[0])}
             onChange={handleCheckboxChange}
+            sx={{ color: "white" }}
           />
           <IconButton
             aria-label="expand row"
             size="small"
             onClick={() => setOpen(!open)}
           >
-            {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+            {open ? (
+              <KeyboardArrowUpIcon sx={{ color: "white" }} />
+            ) : (
+              <KeyboardArrowDownIcon sx={{ color: "white" }} />
+            )}
           </IconButton>
           <Link to={`/edit-patient/${row[0]}`} state={row}>
             <IconButton aria-label="expand row" size="small" title="Edit">
-              <EditIcon fontSize="small" />
+              <EditIcon fontSize="small" sx={{ color: "white" }} />
             </IconButton>
           </Link>
         </TableCell>
-        <TableCell>{row[0] || "N/A"}</TableCell>
-        <TableCell component="th" scope="row">
+        <TableCell sx={{ color: "white" }}>{row[0] || "N/A"}</TableCell>
+        <TableCell component="th" scope="row" sx={{ color: "white" }}>
           {row[1] + " " + row[2]}
         </TableCell>
-        <TableCell>{row[4] || "N/A"}</TableCell>
-        <TableCell>{row[8] || "N/A"}</TableCell>
-        <TableCell>{row[6] || "N/A"}</TableCell>
-        <TableCell>{row.Gender || "N/A"}</TableCell>
-        <TableCell>{row[3] || "N/A"}</TableCell>
+        <TableCell sx={{ color: "white" }}>{row[4] || "N/A"}</TableCell>
+        <TableCell sx={{ color: "white" }}>{row[8] || "N/A"}</TableCell>
+        <TableCell sx={{ color: "white" }}>{row[6] || "N/A"}</TableCell>
+        <TableCell sx={{ color: "white" }}>{row.Gender || "N/A"}</TableCell>
+        <TableCell sx={{ color: "white" }}>{row[3] || "N/A"}</TableCell>
       </TableRow>
       <TableRow>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={12}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box sx={{ margin: 1, m: 5 }}>
-              <Typography variant="h6" gutterBottom component="div">
+              <Typography
+                variant="h6"
+                gutterBottom
+                component="div"
+                sx={{ color: "white" }}
+              >
                 Prescription and Physician Details
               </Typography>
               <Table size="small" aria-label="purchases">
                 <TableHead>
                   <TableRow>
-                    <TableCell>Prescription</TableCell>
-                    <TableCell>Dose</TableCell>
-                    <TableCell>Physician name</TableCell>
-                    <TableCell>Physician number</TableCell>
-                    <TableCell>Bill</TableCell>
-                    <TableCell>Physician Id</TableCell>
-                    <TableCell>Visit date</TableCell>
-                    <TableCell>Next visit</TableCell>
+                    <TableCell sx={{ color: "white" }}>Prescription</TableCell>
+                    <TableCell sx={{ color: "white" }}>Dose</TableCell>
+                    <TableCell sx={{ color: "white" }}>
+                      Physician name
+                    </TableCell>
+                    <TableCell sx={{ color: "white" }}>
+                      Physician number
+                    </TableCell>
+                    <TableCell sx={{ color: "white" }}>Bill</TableCell>
+                    <TableCell sx={{ color: "white" }}>Physician Id</TableCell>
+                    <TableCell sx={{ color: "white" }}>Visit date</TableCell>
+                    <TableCell sx={{ color: "white" }}>Next visit</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  <TableCell>{row.Prescription}</TableCell>
-                  <TableCell>{row.Dose}</TableCell>
-                  <TableCell>{`${row.PhysicianFirstName} ${row.PhysicianLastName}`}</TableCell>
-                  <TableCell>{row.PhysicianNumber}</TableCell>
-                  <TableCell>{row.Bill}</TableCell>
-                  <TableCell>{row.PhysicianID}</TableCell>
-                  <TableCell>{row.VisitDate}</TableCell>
-                  <TableCell>{row.NextVisit}</TableCell>
+                  <TableCell sx={{ color: "white" }}>
+                    {row.Prescription}
+                  </TableCell>
+                  <TableCell sx={{ color: "white" }}> {row.Dose}</TableCell>
+                  <TableCell
+                    sx={{ color: "white" }}
+                  >{`${row.PhysicianFirstName} ${row.PhysicianLastName}`}</TableCell>
+                  <TableCell sx={{ color: "white" }}>
+                    {row.PhysicianNumber}
+                  </TableCell>
+                  <TableCell sx={{ color: "white" }}>{row.Bill}</TableCell>
+                  <TableCell sx={{ color: "white" }}>
+                    {row.PhysicianID}
+                  </TableCell>
+                  <TableCell sx={{ color: "white" }}>{row.VisitDate}</TableCell>
+                  <TableCell sx={{ color: "white" }}>{row.NextVisit}</TableCell>
                 </TableBody>
               </Table>
             </Box>
@@ -292,7 +321,7 @@ export default function DataTable({
         width: "100%",
       }}
     >
-      <Stack direction="row" justifyContent="space-between">
+      <Stack direction="row" justifyContent="space-between" mb={2}>
         <Typography
           sx={{ color: "white", fontSize: "18px", fontWeight: "700" }}
         >
@@ -336,7 +365,11 @@ export default function DataTable({
       </Stack>
       <Table aria-label="collapsible table">
         <TableHead>
-          <TableRow>
+          <TableRow
+            sx={{
+              "& > *": { borderBottom: "unset" },
+            }}
+          >
             <TableCell
               sx={{
                 backgroundColor: "#323D4E",
@@ -427,8 +460,11 @@ export default function DataTable({
         <TableBody>
           {isFetching ? (
             <TableRow>
-              <TableCell colSpan={8}>
-                <CircularProgress color="black" />
+              <TableCell colSpan={8} align="center" sx={{ height: "60vh" }}>
+                <CircularProgress
+                  color="white"
+                  sx={{ color: "white", fontSize: "18px" }}
+                />
               </TableCell>
             </TableRow>
           ) : Array.isArray(patientData) && patientData.length > 0 ? (
@@ -445,7 +481,7 @@ export default function DataTable({
               <TableCell
                 colSpan={8}
                 align="center"
-                sx={{ color: "white", fontSize: "18px" }}
+                sx={{ color: "white", fontSize: "18px", height: "60vh" }}
               >
                 {token
                   ? ` No data Available{" "}`

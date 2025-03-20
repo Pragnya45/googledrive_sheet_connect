@@ -7,6 +7,7 @@ import EditPatientPage from "./pages/EditPatientsPage";
 import CreatePatientsPage from "./pages/AddPatientsPage";
 import GoogleDrivePage from "./pages/GoogleDrivePage";
 import Providers from "./Providers";
+import PrivateRoute from "./Components/PrivateRoute";
 
 function App() {
   return (
@@ -15,9 +16,15 @@ function App() {
         <Router>
           <Routes>
             <Route path="/" element={<Layout />}>
-              <Route index element={<Patients />} />
-              <Route path="edit-patient/:id" element={<EditPatientPage />} />
-              <Route path="create-patient" element={<CreatePatientsPage />} />
+              <Route index element={<PrivateRoute children={<Patients />} />} />
+              <Route
+                path="edit-patient/:id"
+                element={<PrivateRoute children={<EditPatientPage />} />}
+              />
+              <Route
+                path="create-patient"
+                element={<PrivateRoute children={<CreatePatientsPage />} />}
+              />
               <Route path="select-file" element={<GoogleDrivePage />} />
             </Route>
           </Routes>

@@ -4,10 +4,8 @@ import { Helmet } from "react-helmet-async";
 import DataTable from "../Views/DataTable";
 import { useNavigate } from "react-router-dom";
 import Button from "@mui/material/Button";
-import SearchIcon from "@mui/icons-material/Search";
 import PersonIcon from "@mui/icons-material/Person";
 import EmailIcon from "@mui/icons-material/Email";
-import EventIcon from "@mui/icons-material/Event";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { usePaginationApi } from "../hooks/usePaginationApi";
 import { useSelector } from "react-redux";
@@ -43,7 +41,7 @@ function Patients() {
     pagination,
   } = usePaginationApi({
     url: `/googledrive/get-spreadsheet`,
-    query: `&limit=10&spreadsheetId=${fileId}${
+    query: `&limit=8&spreadsheetId=${fileId}${
       searchQuery ? `&name=${searchQuery}` : ""
     }`,
     queryKey: "patients" + searchQuery,
@@ -62,7 +60,7 @@ function Patients() {
         direction="row"
         alignItems="center"
         justifyContent="space-between"
-        mb={5}
+        mb={2}
       >
         <Typography variant="h4" gutterBottom sx={{ color: "white" }}>
           Patients
@@ -88,11 +86,18 @@ function Patients() {
         style={{
           width: "100%",
           display: "flex",
-          gap: "18px",
+          gap: "30px",
           alignItems: "start",
+          justifyContent: "space-between",
         }}
       >
-        <div style={{ width: "75%", display: "flex", flexDirection: "col" }}>
+        <div
+          style={{
+            width: "calc(76% - 15px)",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
           <DataTable
             searchQuery={searchQuery}
             patientData={patientData}
@@ -110,7 +115,8 @@ function Patients() {
         </div>
         <div
           style={{
-            width: "20%",
+            width: "calc(20% - 15px)",
+            marginRight: "20px",
           }}
         >
           <div

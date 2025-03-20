@@ -14,11 +14,12 @@ const APP_BAR_DESKTOP = 92;
 const StyledRoot = styled("div")({
   display: "flex",
   height: "100vh",
-  overflow: "hidden",
+  width: "100%",
+  overflowY: "hidden",
 });
 
 const Main = styled("div")(({ theme }) => ({
-  // flexGrow: 1,
+  flexGrow: 1,
   width: "100%",
   overflow: "auto",
   minHeight: "100vh",
@@ -49,11 +50,12 @@ export default function Layout() {
           style={{
             // flexGrow: 1,
             width: "100%",
-            overflow: "auto",
+            overflowY: "auto",
             minHeight: "100vh",
+            height: "100%",
             padding: "24px",
             overflowY: "auto",
-            paddingBottom: "40px",
+            paddingBottom: "200px",
             backgroundColor: "#141420",
           }}
         >

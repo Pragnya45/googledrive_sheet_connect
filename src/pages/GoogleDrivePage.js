@@ -113,48 +113,63 @@ export default function GoogleDrivePage() {
       <Helmet>
         <title> Connect to Google Drive | Bhumio </title>
       </Helmet>
-      <Container>
-        <Stack
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-          mb={5}
+      {loading ? ( // Show loader while checking auth state
+        <div
+          style={{
+            width: "100%",
+            height: "60vh",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
         >
-          <Typography variant="h4" gutterBottom>
-            Connect to Google Drive and Select Worksheet
-          </Typography>
-        </Stack>
-        {loading ? ( // Show loader while checking auth state
           <CircularProgress color="primary" />
-        ) : !token ? (
-          <Button variant="contained" onClick={signInWithGoogle}>
-            Sign in to Google Drive
-          </Button>
-        ) : (
-          <Button variant="outlined" onClick={signOut}>
-            Sign Out
-          </Button>
-        )}
-
-        {/* Select File Button */}
-        {token && (
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={openFilePicker}
-            sx={{ m: 1 }}
+        </div>
+      ) : (
+        <Container>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+            mb={5}
           >
-            Select File from Google Drive
-          </Button>
-        )}
+            <Typography
+              variant="h4"
+              gutterBottom
+              color="white"
+              sx={{ fontWeight: "600" }}
+            >
+              Connect to Google Drive and Select Worksheet
+            </Typography>
+          </Stack>
 
-        {/* Show Selected File */}
-        {(file ? file : fileId) && (
-          <Typography variant="subtitle1" sx={{ mt: 2 }}>
-            Selected File ID: {file ? file : fileId}
-          </Typography>
-        )}
-      </Container>
+          {!token && (
+            <Button variant="contained" onClick={signInWithGoogle}>
+              Sign in to Google Drive
+            </Button>
+          )}
+
+          {token && (
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={openFilePicker}
+              sx={{ m: 1, margin: 0 }}
+            >
+              Select File from Google Drive
+            </Button>
+          )}
+
+          {/* Show Selected File */}
+          {(file ? file : fileId) && (
+            <Typography
+              variant="subtitle1"
+              sx={{ mt: 2, color: "white", fontWeight: "600" }}
+            >
+              Selected File ID: {file ? file : fileId}
+            </Typography>
+          )}
+        </Container>
+      )}
     </>
   );
 }

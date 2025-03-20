@@ -7,7 +7,6 @@ export default function TablePagination({
   fetchPreviousPage,
   pagination,
   fetchPage,
-  onLimitChange,
   refetch,
 }) {
   const totalPages = pagination?.totalPages || 1;
@@ -56,6 +55,7 @@ export default function TablePagination({
         width: "100%",
         gap: "8px",
         marginTop: "24px",
+        paddingBottom: "50px",
       }}
     >
       <button
@@ -69,7 +69,7 @@ export default function TablePagination({
           border: "none",
         }}
       >
-        <ArrowBackIosRoundedIcon style={{ fontSize: "32px", color: "black" }} />
+        <ArrowBackIosRoundedIcon style={{ fontSize: "25px", color: "white" }} />
       </button>
       <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
         {getPageNumbers().map((pageNumber, index) => (
@@ -110,7 +110,7 @@ export default function TablePagination({
         }}
       >
         <ArrowForwardIosRoundedIcon
-          style={{ fontSize: "32px", color: "black" }}
+          style={{ fontSize: "25px", color: "white" }}
         />
       </button>
     </div>
