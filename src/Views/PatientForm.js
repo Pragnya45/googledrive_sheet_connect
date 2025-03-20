@@ -170,7 +170,7 @@ export default function PatientForm() {
     },
     "Physician Details": {
       "Physician ID": "physicianId",
-      "Physician Name": ["physician_name"],
+      "Physician Name": "physician_name",
       "Physician Number": "pcp",
       Bill: "bill",
     },
@@ -355,7 +355,15 @@ export default function PatientForm() {
                             <Select
                               labelId="physician-name-label"
                               id="Physician Name"
-                              value={formData["Physician Name"] || ""}
+                              value={
+                                physicianData?.some(
+                                  (physician) =>
+                                    physician[1]?.toString() ===
+                                    formData["Physician Name"]
+                                )
+                                  ? formData["Physician Name"]?.toString()
+                                  : ""
+                              }
                               onChange={(event) =>
                                 handlePhysicianChange(event.target.value)
                               }
@@ -371,10 +379,10 @@ export default function PatientForm() {
                             >
                               {physicianData?.slice(1)?.map((physician) => (
                                 <MenuItem
-                                  key={physician[0]}
+                                  key={physician[1]}
                                   value={physician[1]}
                                 >
-                                  {`${physician[1]}`}{" "}
+                                  {physician[1]?.toString()}
                                 </MenuItem>
                               ))}
                             </Select>
