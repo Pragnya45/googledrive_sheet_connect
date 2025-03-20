@@ -41,6 +41,14 @@ This project is a **React.js** website built with **MUI (Material-UI)** componen
 - **Delete:** Remove patient records, and changes reflect directly in Google Sheets.
 
 ---
+## 📄 Sample Google Sheet
+
+To test the application, you can use this sample Google Sheet to upload patient data:  
+
+👉 [Click here to access the sample sheet](https://docs.google.com/spreadsheets/d/1JAHoAvX2395OWndkfE58hKkUzvEgyblB/edit?gid=696475617#gid=696475617)
+
+- Make a copy of the sheet and upload it using the website.  
+- The sheet contains sample patient data to help you get started.
 
 ## 🛠️ Tech Stack
 
