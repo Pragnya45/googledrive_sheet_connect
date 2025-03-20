@@ -215,10 +215,10 @@ function Row({ row, selectedItems, setSelectedItems }) {
         </TableCell>
 
         <TableCell sx={{ color: "white", borderBottom: "none" }}>
-          {row[4] || "N/A"}
+          {row[5] || "N/A"}
         </TableCell>
         <TableCell sx={{ color: "white", borderBottom: "none" }}>
-          {row[5] || "N/A"}
+          {row[7] || "N/A"}
         </TableCell>
         <TableCell sx={{ color: "white", borderBottom: "none" }}>
           {row[6] || "N/A"}
