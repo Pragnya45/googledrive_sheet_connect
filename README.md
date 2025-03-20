@@ -88,3 +88,17 @@ npm install
 npm run start
 
 ```
+
+### 🌐 4. Environment Variables Setup
+
+Create a `.env` file in the `frontend` directory and add the following variables:
+
+```bash
+REACT_APP_BACKEND_URL=your-backend-url
+REACT_APP_GOOGLE_CLIENTID=your-google-client-id
+```
+
+- **`REACT_APP_BACKEND_URL`** – URL of your Nest.js backend.  
+- **`REACT_APP_GOOGLE_CLIENTID`** – OAuth 2.0 Client ID generated from Google Cloud Console.
+
+
