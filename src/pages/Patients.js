@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Stack, Typography, TextField } from "@mui/material";
 import { Helmet } from "react-helmet-async";
 import DataTable from "../Views/DataTable";
-import { useNavigate } from "react-router-dom";
 import Button from "@mui/material/Button";
 import PersonIcon from "@mui/icons-material/Person";
 import EmailIcon from "@mui/icons-material/Email";
@@ -11,14 +10,11 @@ import { usePaginationApi } from "../hooks/usePaginationApi";
 import { useSelector } from "react-redux";
 import { adminState } from "../Redux/adminSlice";
 import TablePagination from "../Components/TablePagination";
+import Breadcrumb from "../Components/Breadcrumb";
+import useResponsive from "../hooks/useResponsive";
 
 function Patients() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const navigate = useNavigate();
   const { fileId } = useSelector(adminState);
-  const handleSearchChange = (event) => {
-    setSearchQuery(event.target.value);
-  };
   const [filters, setFilters] = useState({
     name: "",
     email: "",
@@ -31,6 +27,8 @@ function Patients() {
       [name]: value,
     });
   };
+  const isDesktop = useResponsive("up", "lg");
+
   const {
     data,
     refetch,
@@ -42,9 +40,11 @@ function Patients() {
   } = usePaginationApi({
     url: `/googledrive/get-spreadsheet`,
     query: `&limit=8&spreadsheetId=${fileId}${
-      searchQuery ? `&name=${searchQuery}` : ""
+      filters?.name ? `&name=${filters?.name}` : ""
+    }${filters?.id ? `&patientId=${filters?.id}` : ""}${
+      filters?.email ? `&email=${filters?.email}` : ""
     }`,
-    queryKey: "patients" + searchQuery,
+    queryKey: "patients",
     body: {
       method: "GET",
     },
@@ -54,52 +54,38 @@ function Patients() {
   return (
     <div style={{ width: "100%" }}>
       <Helmet>
-        <title> Add Patients | Bhumio </title>
+        <title> Add Patients</title>
       </Helmet>
       <Stack
         direction="row"
         alignItems="center"
-        justifyContent="space-between"
+        justifyContent="start"
+        gap={2}
         mb={2}
       >
         <Typography variant="h4" gutterBottom sx={{ color: "white" }}>
           Patients
         </Typography>
+        <Breadcrumb page="Patients" />
       </Stack>
-      {/* <div
-        style={{
-          width: "100%",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <TextField
-          label="Search Patients"
-          variant="outlined"
-          value={searchQuery}
-          onChange={handleSearchChange}
-          style={{ marginBottom: "16px" }}
-        />
-      </div> */}
       <div
         style={{
           width: "100%",
           display: "flex",
+          flexDirection: isDesktop ? "row" : "column",
           gap: "30px",
           alignItems: "start",
-          justifyContent: "space-between",
+          justifyContent: isDesktop ? "space-between" : "flex-start",
         }}
       >
         <div
           style={{
-            width: "calc(76% - 15px)",
+            width: isDesktop ? "calc(76% - 15px)" : "95%",
             display: "flex",
             flexDirection: "column",
           }}
         >
           <DataTable
-            searchQuery={searchQuery}
             patientData={patientData}
             isFetching={isFetching}
             refetch={refetch}

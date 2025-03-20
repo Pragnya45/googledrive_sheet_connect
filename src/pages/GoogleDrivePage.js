@@ -11,20 +11,11 @@ import { useNotification } from "../hooks/useNotification";
 import CircularProgress from "@mui/material/CircularProgress";
 
 export default function GoogleDrivePage() {
-  const [gapiLoaded, setGapiLoaded] = useState(false);
   const [loading, setLoading] = useState(true);
   const [fileId, setFileId] = useState(null);
-  const [isSignedin, setIsSignedin] = useState(false);
   const { token, fileId: file } = useSelector(adminState);
-  const { showMessage } = useNotification();
   const dispatch = useDispatch();
-  // useEffect(() => {
-  //   if (window.gapi) {
-  //     window.gapi.load("client:auth2", initClient);
-  //   } else {
-  //     console.error("Google API not loaded");
-  //   }
-  // }, []);
+
   useEffect(() => {
     const loadGoogleAPI = () => {
       console.log("Loading Google Identity Services...");
@@ -47,10 +38,7 @@ export default function GoogleDrivePage() {
   }, []);
 
   function signInWithGoogle() {
-    console.log("Initializing Google Identity Services OAuth...");
-
     if (!window.google) {
-      console.error("Google Identity Services API not loaded!");
       return;
     }
 
@@ -60,38 +48,23 @@ export default function GoogleDrivePage() {
         "https://www.googleapis.com/auth/spreadsheets.readonly https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file",
       callback: (response) => {
         if (response.error) {
-          console.error("Error during authentication:", response);
           return;
         }
 
-        console.log("Access Token:", response.access_token);
         dispatch(adminFn({ token: response.access_token }));
-
-        setIsSignedin(true);
       },
     });
 
     client.requestAccessToken({ prompt: "" });
   }
 
-  function signOut() {
-    console.log("Signing out...");
-    dispatch(adminLogoutFn()); // Clear token from Redux
-    setIsSignedin(false);
-  }
-
   function openFilePicker() {
-    console.log("Opening Google Drive Picker...");
-
     if (!window.google) {
-      console.error("Google Picker API not loaded!");
       return;
     }
 
     window.gapi.load("picker", () => {
-      console.log("Google Picker API loaded");
-
-      const oauthToken = token; // Use the stored token from Redux
+      const oauthToken = token;
 
       const picker = new window.google.picker.PickerBuilder()
         .addView(window.google.picker.ViewId.SPREADSHEETS)
@@ -117,7 +90,8 @@ export default function GoogleDrivePage() {
         <div
           style={{
             width: "100%",
-            height: "60vh",
+            height: "100vh",
+            display: "flex",
             justifyContent: "center",
             alignItems: "center",
           }}

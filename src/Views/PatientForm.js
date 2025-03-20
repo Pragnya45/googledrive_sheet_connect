@@ -17,6 +17,7 @@ import { useSelector } from "react-redux";
 import { adminState } from "../Redux/adminSlice";
 import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import { useQueryApi } from "../hooks/useQueryApi";
+import CircularProgress from "@mui/material/CircularProgress";
 
 const steps = [
   {
@@ -24,6 +25,7 @@ const steps = [
     description: "Enter Patient's Details here:",
     fields: [
       "Patient Name (First, Last Name)",
+      "Email",
       "Location",
       "Age",
       "Gender",
@@ -39,13 +41,8 @@ const steps = [
   },
   {
     label: "Physician Details",
-    description: "Enter Physician Details here:",
-    fields: [
-      "Physician ID",
-      "Physician Name (First, Last Name)",
-      "Physician Number",
-      "Bill",
-    ],
+    description: "Select Physician",
+    fields: ["Physician Name", "Physician ID", "Physician Number", "Bill"],
   },
 ];
 
@@ -61,25 +58,22 @@ export default function PatientForm() {
     queryKey: "configField",
     enabled: true,
   });
-  console.log();
-  const patientData = field?.response;
+  const patientData = field?.response?.results;
+  const { data: physicianfield } = useQueryApi({
+    url: `/googledrive/get-physician?spreadsheetId=${fileId}`,
+    queryKey: "physician",
+    enabled: true,
+  });
+  const physicianData = physicianfield?.response?.results;
   const getAutoDetails = async () => {
-    // Get the last patient and physician IDs from patientData
     const lastPatient = patientData?.length
-      ? patientData[patientData.length - 1]["Patient ID"]
-      : null;
-    const lastPhysician = patientData?.length
-      ? patientData[patientData.length - 1]["Physician ID"]
+      ? patientData[patientData.length - 1][0]
       : null;
 
-    // Generate next IDs based on the last available IDs
     const PatientID = await IDGenerater(getNextNumber(lastPatient), "a12kj");
-    const DrId = await IDGenerater(getNextNumber(lastPhysician), "dr");
 
-    // Set the new IDs to formData
     setFormData((prevFormData) => ({
       ...prevFormData,
-      "Physician ID": DrId || "",
       "Patient ID": PatientID || "",
     }));
   };
@@ -97,7 +91,6 @@ export default function PatientForm() {
   const [errors, setErrors] = useState({});
 
   const handleNext = () => {
-    // Validate the fields before proceeding to the next step
     if (validateFields()) {
       setActiveStep((prevActiveStep) => prevActiveStep + 1);
     }
@@ -109,8 +102,6 @@ export default function PatientForm() {
 
   const handleInputChange = (event, fieldName) => {
     const { value } = event.target;
-
-    // Check if the field name is 'field1' and the value contains only numbers
     if (
       fieldName === "Age" ||
       fieldName === "Phone" ||
@@ -123,6 +114,7 @@ export default function PatientForm() {
         });
         return;
       }
+
       if (
         (fieldName === "Phone" || fieldName === "Physician Number") &&
         Number.isNaN(Number(value))
@@ -135,10 +127,13 @@ export default function PatientForm() {
         return;
       }
     }
-    // Handle invalid input for 'field1' (e.g., show an error message)
     setFormData({
       ...formData,
       [fieldName]: value,
+    });
+    setErrors({
+      ...errors,
+      [fieldName]: ``,
     });
   };
 
@@ -156,7 +151,6 @@ export default function PatientForm() {
     setErrors(newErrors);
     return isValid;
   };
-  console.log(formData);
   const apiFieldMapping = {
     "Patients Details": {
       "Patient Name (First, Last Name)": ["first_name", "last_name"],
@@ -176,10 +170,7 @@ export default function PatientForm() {
     },
     "Physician Details": {
       "Physician ID": "physicianId",
-      "Physician Name (First, Last Name)": [
-        "physician_first_name",
-        "physician_last_name",
-      ],
+      "Physician Name": ["physician_name"],
       "Physician Number": "pcp",
       Bill: "bill",
     },
@@ -187,7 +178,6 @@ export default function PatientForm() {
   const handleFinish = async () => {
     let formattedData = {};
 
-    // Iterate through each step
     steps.forEach((step) => {
       step.fields.forEach((fieldName) => {
         const mappedField = apiFieldMapping[step.label][fieldName];
@@ -207,7 +197,6 @@ export default function PatientForm() {
       });
     });
 
-    console.log(formattedData);
     const { response, error } = await apiFn({
       url: `/googledrive/add-patient?spreadsheetId=${fileId}`,
       options: {
@@ -224,145 +213,306 @@ export default function PatientForm() {
       return;
     }
   };
-  console.log(formData);
-  return (
-    <Box>
-      <Stepper activeStep={activeStep} orientation="vertical" sx={{ ml: 5 }}>
-        {steps.map((step, index) => (
-          <Step key={step.label}>
-            <StepLabel>{step.label}</StepLabel>
-            <StepContent>
-              <Typography>{step.description}</Typography>
-              <form>
-                {/* <Container sx={{ display: "flex", flexDirection: ["column", "column", 'row'], justifyContent: "center", alignItems: "center" }}> */}
+  const handlePhysicianChange = (selectedName) => {
+    const selectedPhysician = physicianData.find(
+      (physician) => `${physician[1]}` === selectedName
+    );
 
-                <Grid container spacing={2}>
-                  {" "}
-                  {/* Use Grid container */}
-                  {/* {step.fields.map((fieldName) => (
-                    <Grid item xs={4} key={fieldName}>
-                      
-                      <TextField
-                        id={fieldName}
-                        label={fieldName}
-                        variant="outlined"
-                        value={formData[fieldName] || ""}
-                        onChange={(event) =>
-                          handleInputChange(event, fieldName)
-                        }
-                        sx={{ mt: 2 }}
-                        InputProps={{
-                          readOnly:
-                            fieldName === "Patient ID" ||
-                            fieldName === "Physician ID"
-                              ? true
-                              : false,
-                        }}
-                      />
-                      <Typography style={{ color: "red" }}>
-                        {errors[fieldName]}
-                      </Typography>
-                    </Grid>
-                  ))} */}
-                  {step.fields.map((fieldName) => (
-                    <Grid item xs={4} key={fieldName}>
-                      {" "}
-                      {fieldName.toLowerCase() === "gender" ? (
-                        <FormControl
-                          variant="outlined"
-                          sx={{ mt: 2, minWidth: 120 }}
-                        >
-                          <InputLabel id={`${fieldName}-label`}>
-                            {fieldName}
-                          </InputLabel>
-                          <Select
-                            labelId={`${fieldName}-label`}
+    if (selectedPhysician) {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        "Physician Name": selectedName,
+        "Physician ID": selectedPhysician[0] || "",
+        "Physician Number": selectedPhysician[3] || "",
+      }));
+    }
+  };
+
+  return (
+    <Box
+      sx={{
+        backgroundColor: "#273142",
+        border: "1px solid #313D4F",
+        borderRadius: "10px",
+        marginRight: "20px",
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      {isFetching ? (
+        <div
+          style={{
+            width: "100%",
+            height: "100vh",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <CircularProgress color="primary" />
+        </div>
+      ) : (
+        <Stepper
+          activeStep={activeStep}
+          orientation="vertical"
+          sx={{ ml: 5, color: "white" }}
+        >
+          {steps.map((step, index) => (
+            <Step key={step.label}>
+              <StepLabel>
+                <Typography sx={{ color: "white" }}>{step.label}</Typography>
+              </StepLabel>
+              <StepContent>
+                <Typography sx={{ color: "white" }}>
+                  {step.description}
+                </Typography>
+                <form>
+                  <Grid container spacing={2}>
+                    {step.fields.map((fieldName) => (
+                      <Grid item xs={4} key={fieldName}>
+                        {" "}
+                        {fieldName.toLowerCase() === "gender" ? (
+                          <FormControl
+                            variant="outlined"
+                            sx={{
+                              mt: 2,
+                              width: 195,
+                              "& .MuiOutlinedInput-notchedOutline": {
+                                borderColor: "white",
+                              },
+                              "&:hover .MuiOutlinedInput-notchedOutline": {
+                                borderColor: "#ccc",
+                              },
+                              "&.Mui-focused .MuiOutlinedInput-notchedOutline":
+                                {
+                                  borderColor: "white",
+                                },
+                            }}
+                          >
+                            <InputLabel
+                              id={`${fieldName}-label`}
+                              sx={{
+                                color: "white",
+                                "&.Mui-focused": {
+                                  color: "white",
+                                },
+                              }}
+                            >
+                              {fieldName}
+                            </InputLabel>
+                            <Select
+                              labelId={`${fieldName}-label`}
+                              id={fieldName}
+                              value={formData[fieldName] || ""}
+                              onChange={(event) =>
+                                handleInputChange(event, fieldName)
+                              }
+                              label={fieldName}
+                              sx={{
+                                "& .MuiInputBase-input": {
+                                  color: "white",
+                                },
+                                "& .MuiSvgIcon-root": {
+                                  color: "white",
+                                },
+                              }}
+                            >
+                              <MenuItem value="Male">Male</MenuItem>
+                              <MenuItem value="Female">Female</MenuItem>
+                            </Select>
+                          </FormControl>
+                        ) : fieldName.toLowerCase() === "physician name" ? (
+                          // Physician Name Select
+                          <FormControl
+                            variant="outlined"
+                            sx={{
+                              mt: 2,
+                              width: 195,
+                              "& .MuiOutlinedInput-notchedOutline": {
+                                borderColor: "white",
+                              },
+                              "&:hover .MuiOutlinedInput-notchedOutline": {
+                                borderColor: "#ccc",
+                              },
+                              "&.Mui-focused .MuiOutlinedInput-notchedOutline":
+                                {
+                                  borderColor: "white",
+                                },
+                            }}
+                          >
+                            <InputLabel
+                              id="physician-name-label"
+                              sx={{
+                                color: "white",
+                                "&.Mui-focused": {
+                                  color: "white",
+                                },
+                              }}
+                            >
+                              Physician Name
+                            </InputLabel>
+                            <Select
+                              labelId="physician-name-label"
+                              id="Physician Name"
+                              value={formData["Physician Name"] || ""}
+                              onChange={(event) =>
+                                handlePhysicianChange(event.target.value)
+                              }
+                              label="Physician Name"
+                              sx={{
+                                "& .MuiInputBase-input": {
+                                  color: "white",
+                                },
+                                "& .MuiSvgIcon-root": {
+                                  color: "white",
+                                },
+                              }}
+                            >
+                              {physicianData?.slice(1)?.map((physician) => (
+                                <MenuItem
+                                  key={physician[0]}
+                                  value={physician[1]}
+                                >
+                                  {`${physician[1]}`}{" "}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        ) : (
+                          <TextField
                             id={fieldName}
+                            label={fieldName}
+                            variant="outlined"
+                            type={
+                              fieldName.toLowerCase().includes("next visit") ||
+                              fieldName.toLowerCase().includes("visit date")
+                                ? "date"
+                                : "text"
+                            }
                             value={formData[fieldName] || ""}
                             onChange={(event) =>
                               handleInputChange(event, fieldName)
                             }
-                            label={fieldName}
-                          >
-                            <MenuItem value="Male">Male</MenuItem>
-                            <MenuItem value="Female">Female</MenuItem>
-                          </Select>
-                        </FormControl>
-                      ) : (
-                        <TextField
-                          id={fieldName}
-                          label={fieldName}
-                          variant="outlined"
-                          type={
-                            fieldName.toLowerCase().includes("next visit") ||
-                            fieldName.toLowerCase().includes("visit date")
-                              ? "date"
-                              : "text"
-                          }
-                          value={formData[fieldName] || ""}
-                          onChange={(event) =>
-                            handleInputChange(event, fieldName)
-                          }
-                          sx={{ mt: 2, color: "white" }}
-                          InputLabelProps={{
-                            shrink:
-                              fieldName.toLowerCase().includes("next visit") ||
-                              fieldName.toLowerCase().includes("visit date")
-                                ? true
-                                : undefined,
-                          }}
-                          InputProps={{
-                            readOnly:
-                              fieldName === "Patient ID" ||
-                              fieldName === "Physician ID"
-                                ? true
-                                : false,
-                          }}
-                        />
-                      )}
-                      <Typography style={{ color: "red" }}>
-                        {errors[fieldName]}
-                      </Typography>
-                    </Grid>
-                  ))}
-                </Grid>
-
-                {/* </Container> */}
-              </form>
-              <Box sx={{ mb: 2 }}>
-                <Container>
-                  <Button
-                    variant="contained"
-                    onClick={handleNext}
-                    sx={{ mt: 1, mr: 1 }}
-                  >
-                    {index === steps.length - 1 ? "Finish" : "Continue"}
-                  </Button>
-                  <Button
-                    disabled={index === 0}
-                    onClick={handleBack}
-                    sx={{ mt: 1, mr: 1 }}
-                  >
-                    Back
-                  </Button>
-                </Container>
-              </Box>
-            </StepContent>
-          </Step>
-        ))}
-      </Stepper>
+                            sx={{
+                              mt: 2,
+                              "& .MuiOutlinedInput-root": {
+                                "& fieldset": {
+                                  borderColor: "white",
+                                },
+                                "&:hover fieldset": {
+                                  borderColor: "#ccc",
+                                },
+                                "&.Mui-focused fieldset": {
+                                  borderColor: "white",
+                                },
+                              },
+                              "& .MuiInputLabel-root": {
+                                color: "white",
+                              },
+                              "& .MuiInputLabel-root.Mui-focused": {
+                                color: "white",
+                              },
+                              "& input": {
+                                color: "white",
+                              },
+                              "& .MuiSvgIcon-root": {
+                                color: "white",
+                              },
+                              "& input[type='date']::-webkit-calendar-picker-indicator":
+                                {
+                                  filter: "invert(1)",
+                                },
+                            }}
+                            InputLabelProps={{
+                              shrink:
+                                fieldName
+                                  .toLowerCase()
+                                  .includes("next visit") ||
+                                fieldName.toLowerCase().includes("visit date")
+                                  ? true
+                                  : undefined,
+                            }}
+                            InputProps={{
+                              readOnly:
+                                fieldName === "Patient ID" ||
+                                fieldName === "Physician ID"
+                                  ? true
+                                  : false,
+                            }}
+                          />
+                        )}
+                        <Typography style={{ color: "red" }}>
+                          {errors[fieldName]}
+                        </Typography>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </form>
+                <Box sx={{ mb: 2, mt: 1 }}>
+                  <Container>
+                    <Button
+                      variant="contained"
+                      onClick={handleNext}
+                      sx={{ mt: 1, mr: 1 }}
+                    >
+                      {index === steps.length - 1 ? "Finish" : "Continue"}
+                    </Button>
+                    <Button
+                      disabled={index === 0}
+                      onClick={handleBack}
+                      sx={{ mt: 1, mr: 1, color: "white" }}
+                    >
+                      <Typography sx={{ color: "white" }}>Back</Typography>
+                    </Button>
+                  </Container>
+                </Box>
+              </StepContent>
+            </Step>
+          ))}
+        </Stepper>
+      )}
       {activeStep === steps.length && (
-        <Paper square elevation={0} sx={{ p: 3 }}>
-          <Typography>{`Want to save these details?`}</Typography>
-          <Button onClick={handleBack} sx={{ mt: 1, mr: 1 }}>
+        <Paper
+          square
+          elevation={0}
+          sx={{ p: 3, backgroundColor: "transparent" }}
+        >
+          <Typography
+            sx={{ color: "white" }}
+          >{`Want to save these details?`}</Typography>
+          <Button onClick={handleBack} sx={{ mt: 1, mr: 1, color: "white" }}>
             Back
           </Button>
           <Button
             onClick={handleFinish}
-            sx={{ mt: 1, mr: 1 }}
+            sx={{
+              mt: 1,
+              mr: 1,
+              position: "relative",
+              backgroundColor: loading ? "#1976d2" : undefined,
+              "&.Mui-disabled": {
+                backgroundColor: "#1976d2",
+              },
+              height: 40,
+              minWidth: 100,
+            }}
             variant="contained"
+            disabled={loading}
           >
-            Save
+            {loading ? (
+              <CircularProgress
+                size={24}
+                sx={{
+                  color: "white",
+                  position: "absolute",
+                }}
+              />
+            ) : (
+              <span style={{ visibility: loading ? "hidden" : "visible" }}>
+                Save
+              </span>
+            )}
           </Button>
         </Paper>
       )}

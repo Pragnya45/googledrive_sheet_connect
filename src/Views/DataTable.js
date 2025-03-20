@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import * as React from "react";
 import PropTypes from "prop-types";
 import Box from "@mui/material/Box";
@@ -17,12 +16,9 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import EditIcon from "@mui/icons-material/Edit";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { usePaginationApi } from "../hooks/usePaginationApi";
 import { adminState } from "../Redux/adminSlice";
 import { useSelector } from "react-redux";
-import TablePagination from "../Components/TablePagination";
 import CircularProgress from "@mui/material/CircularProgress";
-import DeleteIcon from "@mui/icons-material/Delete";
 import Checkbox from "@mui/material/Checkbox";
 import useApi from "../hooks/useApi";
 import { useNotification } from "../hooks/useNotification";
@@ -30,6 +26,7 @@ import DeletePopup from "../Components/DeletePopup";
 import Button from "@mui/material/Button";
 import { useNavigate } from "react-router-dom";
 import { Stack } from "@mui/material";
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 
 function createData(
   firstName,
@@ -167,18 +164,26 @@ function Row({ row, selectedItems, setSelectedItems }) {
     <>
       <TableRow
         sx={{
-          "& > *": { borderBottom: "unset" },
+          "& > *": { borderBottom: "none" },
           "&:not(:last-child)": {
             borderBottom: "1px solid #4D5C6B", // Light border for all rows except last row
           },
         }}
       >
-        <TableCell sx={{ display: "flex", alignItems: "center", gap: 0 }}>
+        <TableCell
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 0,
+            borderTop: "transaparent",
+            borderBottom: "none",
+          }}
+        >
           <Checkbox
             {...label}
             checked={selectedItems.includes(row[0])}
             onChange={handleCheckboxChange}
-            sx={{ color: "white" }}
+            sx={{ color: "white", padding: 0 }}
           />
           <IconButton
             aria-label="expand row"
@@ -186,28 +191,53 @@ function Row({ row, selectedItems, setSelectedItems }) {
             onClick={() => setOpen(!open)}
           >
             {open ? (
-              <KeyboardArrowUpIcon sx={{ color: "white" }} />
+              <KeyboardArrowUpIcon sx={{ color: "white", padding: 0 }} />
             ) : (
-              <KeyboardArrowDownIcon sx={{ color: "white" }} />
+              <KeyboardArrowDownIcon sx={{ color: "white", padding: 0 }} />
             )}
           </IconButton>
           <Link to={`/edit-patient/${row[0]}`} state={row}>
             <IconButton aria-label="expand row" size="small" title="Edit">
-              <EditIcon fontSize="small" sx={{ color: "white" }} />
+              <EditIcon fontSize="small" sx={{ color: "white", padding: 0 }} />
             </IconButton>
           </Link>
         </TableCell>
-        <TableCell sx={{ color: "white" }}>{row[0] || "N/A"}</TableCell>
-        <TableCell component="th" scope="row" sx={{ color: "white" }}>
+
+        <TableCell sx={{ color: "white", borderBottom: "none" }}>
+          {row[0] || "N/A"}
+        </TableCell>
+        <TableCell
+          component="th"
+          scope="row"
+          sx={{ color: "white", borderBottom: "none" }}
+        >
           {row[1] + " " + row[2]}
         </TableCell>
-        <TableCell sx={{ color: "white" }}>{row[4] || "N/A"}</TableCell>
-        <TableCell sx={{ color: "white" }}>{row[8] || "N/A"}</TableCell>
-        <TableCell sx={{ color: "white" }}>{row[6] || "N/A"}</TableCell>
-        <TableCell sx={{ color: "white" }}>{row.Gender || "N/A"}</TableCell>
-        <TableCell sx={{ color: "white" }}>{row[3] || "N/A"}</TableCell>
+
+        <TableCell sx={{ color: "white", borderBottom: "none" }}>
+          {row[4] || "N/A"}
+        </TableCell>
+        <TableCell sx={{ color: "white", borderBottom: "none" }}>
+          {row[5] || "N/A"}
+        </TableCell>
+        <TableCell sx={{ color: "white", borderBottom: "none" }}>
+          {row[6] || "N/A"}
+        </TableCell>
+        <TableCell sx={{ color: "white", borderBottom: "none" }}>
+          {row[8] || "N/A"}
+        </TableCell>
+        <TableCell sx={{ color: "white", borderBottom: "none" }}>
+          {row[4] || "N/A"}
+        </TableCell>
       </TableRow>
-      <TableRow>
+      <TableRow
+        sx={{
+          "& > *": { borderBottom: "unset" },
+          "&:not(:last-child)": {
+            borderBottom: "1px solid #4D5C6B", // Light border for all rows except last row
+          },
+        }}
+      >
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={12}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box sx={{ margin: 1, m: 5 }}>
@@ -237,22 +267,14 @@ function Row({ row, selectedItems, setSelectedItems }) {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  <TableCell sx={{ color: "white" }}>
-                    {row.Prescription}
-                  </TableCell>
-                  <TableCell sx={{ color: "white" }}> {row.Dose}</TableCell>
-                  <TableCell
-                    sx={{ color: "white" }}
-                  >{`${row.PhysicianFirstName} ${row.PhysicianLastName}`}</TableCell>
-                  <TableCell sx={{ color: "white" }}>
-                    {row.PhysicianNumber}
-                  </TableCell>
-                  <TableCell sx={{ color: "white" }}>{row.Bill}</TableCell>
-                  <TableCell sx={{ color: "white" }}>
-                    {row.PhysicianID}
-                  </TableCell>
-                  <TableCell sx={{ color: "white" }}>{row.VisitDate}</TableCell>
-                  <TableCell sx={{ color: "white" }}>{row.NextVisit}</TableCell>
+                  <TableCell sx={{ color: "white" }}>{row[9]}</TableCell>
+                  <TableCell sx={{ color: "white" }}> {row[10]}</TableCell>
+                  <TableCell sx={{ color: "white" }}>{`${row[14]}`}</TableCell>
+                  <TableCell sx={{ color: "white" }}>{row[15]}</TableCell>
+                  <TableCell sx={{ color: "white" }}>{row[16]}</TableCell>
+                  <TableCell sx={{ color: "white" }}>{row[13]}</TableCell>
+                  <TableCell sx={{ color: "white" }}>{row[11]}</TableCell>
+                  <TableCell sx={{ color: "white" }}>{row[12]}</TableCell>
                 </TableBody>
               </Table>
             </Box>
@@ -262,12 +284,7 @@ function Row({ row, selectedItems, setSelectedItems }) {
     </>
   );
 }
-export default function DataTable({
-  searchQuery,
-  patientData,
-  isFetching,
-  refetch,
-}) {
+export default function DataTable({ patientData, isFetching, refetch }) {
   console.log(rows);
   const { fileId, token } = useSelector(adminState);
   const [openDelete, setOpenDelete] = useState(false);
@@ -313,6 +330,7 @@ export default function DataTable({
   return (
     <TableContainer
       component={Paper}
+      className="custom-scrollbar"
       sx={{
         backgroundColor: "#273142",
         border: "1px solid #313D4F",
@@ -327,24 +345,26 @@ export default function DataTable({
         >
           Patient List
         </Typography>
-        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-          <Checkbox
-            {...label}
-            sx={{
-              color: "white",
-            }}
-            checked={isAllSelected}
-            onChange={handleSelectAllChange}
-          />
-          <Typography
-            sx={{
-              color: "white",
-              fontWeight: "400",
-            }}
-          >
-            Select All
-          </Typography>
-
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "2px" }}>
+            <Checkbox
+              {...label}
+              sx={{
+                color: "white",
+                padding: 0,
+              }}
+              checked={isAllSelected}
+              onChange={handleSelectAllChange}
+            />
+            <Typography
+              sx={{
+                color: "white",
+                fontWeight: "400",
+              }}
+            >
+              Select All
+            </Typography>
+          </div>
           <Button
             variant="contained"
             sx={{ backgroundColor: "#4880FF", borderRadius: "6px" }}
@@ -358,8 +378,17 @@ export default function DataTable({
                 setOpenDelete(true);
               }
             }}
+            style={{
+              backgroundColor: "red",
+              borderRadius: "4px",
+              padding: "8px",
+            }}
           >
-            <DeleteIcon fontSize="small" color="error" />
+            <DeleteOutlinedIcon
+              fontSize="small"
+              color="white"
+              sx={{ color: "white" }}
+            />
           </div>
         </div>
       </Stack>
@@ -378,6 +407,7 @@ export default function DataTable({
                 color: "white",
                 fontSize: "14px",
                 fontWeight: "800",
+                borderBottom: "none",
               }}
             >
               Actions
@@ -388,6 +418,7 @@ export default function DataTable({
                 color: "white",
                 fontSize: "14px",
                 fontWeight: "800",
+                borderBottom: "none",
               }}
             >
               Patient Id
@@ -399,6 +430,7 @@ export default function DataTable({
                 color: "white",
                 fontSize: "14px",
                 fontWeight: "800",
+                borderBottom: "none",
               }}
             >
               Patient name
@@ -409,9 +441,10 @@ export default function DataTable({
                 color: "white",
                 fontSize: "14px",
                 fontWeight: "800",
+                borderBottom: "none",
               }}
             >
-              Location
+              Email
             </TableCell>
             <TableCell
               sx={{
@@ -419,6 +452,7 @@ export default function DataTable({
                 color: "white",
                 fontSize: "14px",
                 fontWeight: "800",
+                borderBottom: "none",
               }}
             >
               Age
@@ -429,6 +463,7 @@ export default function DataTable({
                 color: "white",
                 fontSize: "14px",
                 fontWeight: "800",
+                borderBottom: "none",
               }}
             >
               Phone
@@ -439,6 +474,7 @@ export default function DataTable({
                 color: "white",
                 fontSize: "14px",
                 fontWeight: "800",
+                borderBottom: "none",
               }}
             >
               Gender
@@ -451,16 +487,21 @@ export default function DataTable({
                 color: "white",
                 fontSize: "14px",
                 fontWeight: "800",
+                borderBottom: "none",
               }}
             >
-              Address
+              Location
             </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {isFetching ? (
             <TableRow>
-              <TableCell colSpan={8} align="center" sx={{ height: "60vh" }}>
+              <TableCell
+                colSpan={8}
+                align="center"
+                sx={{ height: "40vh", borderBottom: "none" }}
+              >
                 <CircularProgress
                   color="white"
                   sx={{ color: "white", fontSize: "18px" }}
@@ -481,10 +522,15 @@ export default function DataTable({
               <TableCell
                 colSpan={8}
                 align="center"
-                sx={{ color: "white", fontSize: "18px", height: "60vh" }}
+                sx={{
+                  color: "white",
+                  fontSize: "18px",
+                  height: "40vh",
+                  borderBottom: "none",
+                }}
               >
                 {token
-                  ? ` No data Available{" "}`
+                  ? ` No data Available`
                   : "Go to Select FIle page for login"}
               </TableCell>
             </TableRow>

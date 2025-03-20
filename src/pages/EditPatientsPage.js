@@ -9,7 +9,6 @@ import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import { Container, Grid, Stack, TextField } from "@mui/material";
 import { useState } from "react";
-import { useLocation } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { useQueryApi } from "../hooks/useQueryApi";
 import { useSelector } from "react-redux";
@@ -18,15 +17,16 @@ import { useNavigate } from "react-router-dom";
 import { useNotification } from "../hooks/useNotification";
 import useApi from "../hooks/useApi";
 import { FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import CircularProgress from "@mui/material/CircularProgress";
 
 const steps = [
   {
     label: "Patients Details",
     description: "Enter Patient's Details here:",
-    // fields: ['Patient Name (First, Last Name)', "Location", "Age", "Gender", "Phone", "Address"],
     fields: [
       "Patient ID",
       "Patient Name (First, Last Name)",
+      "Email",
       "Location",
       "Age",
       "Gender",
@@ -41,13 +41,8 @@ const steps = [
   },
   {
     label: "Physician Details",
-    description: "Enter Physician Details here:",
-    fields: [
-      "Physician ID",
-      "Physician Name (First, Last Name)",
-      "Physician Number",
-      "Bill",
-    ],
+    description: "Select Physician",
+    fields: ["Physician Name", "Physician ID", "Physician Number", "Bill"],
   },
 ];
 
@@ -61,8 +56,6 @@ export default function EditPatientPage() {
   const { apiFn, loading } = useApi();
   const [formData, setFormData] = useState({});
 
-  const location = useLocation().state;
-
   const { data: field, isFetching } = useQueryApi({
     url: `/googledrive/get-patient?spreadsheetId=${fileId}&patientId=${id}`,
     queryKey: "configField" + id,
@@ -70,26 +63,14 @@ export default function EditPatientPage() {
   });
   const data = field?.response;
   console.log(data);
-  // React.useEffect(() => {
-  //   const data = {
-  //     "Patient Name (First, Last Name)": `${location?.firstName} ${location?.lastName}`,
-  //     Location: location?.Location,
-  //     Age: location?.Age,
-  //     Gender: location?.Gender,
-  //     Phone: location?.Phone,
-  //     Address: location?.Address,
-  //     Prescription: location?.Prescription,
-  //     Dose: location?.Dose,
-  //     "Visit Date": location?.VisitDate,
-  //     "Next Visit": location?.NextVisit,
-  //     "Physician ID": location?.PhysicianID,
-  //     "Physician Name (First, Last Name)": `${location?.PhysicianFirstName} ${location?.PhysicianLastName}`,
-  //     "Physician Number": location?.PhysicianNumber,
-  //     Bill: location?.Bill,
-  //     "Patient ID": location?.PatientID,
-  //   };
-  //   setFormData(data);
-  // }, [location]);
+  const { data: physicianfield, isFetching: physicianFetching } = useQueryApi({
+    url: `/googledrive/get-physician?spreadsheetId=${fileId}`,
+    queryKey: "physician",
+    enabled: true,
+  });
+  const physicianData = physicianfield?.response?.results;
+  console.log(physicianData);
+
   useEffect(() => {
     const formDataFromApi = {
       "Patient Name (First, Last Name)": `${data?.first_name} ${data?.last_name}`,
@@ -104,7 +85,7 @@ export default function EditPatientPage() {
       "Visit Date": data?.start_dt_time,
       "Next Visit": data?.next_dt_time,
       "Physician ID": data?.physicianId || "345",
-      "Physician Name (First, Last Name)": `${data?.physician_first_name} ${data?.physician_last_name}`,
+      "Physician Name": data?.physician_name || "",
       "Physician Number": data?.pcp,
       Bill: data?.bill,
       "Patient ID": data?.patientId,
@@ -114,7 +95,6 @@ export default function EditPatientPage() {
   }, [data]);
 
   const handleNext = () => {
-    // Validate the fields before proceeding to the next step
     if (validateFields()) {
       setActiveStep((prevActiveStep) => prevActiveStep + 1);
     }
@@ -124,16 +104,9 @@ export default function EditPatientPage() {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
 
-  // const handleReset = () => {
-  //   setActiveStep(0);
-  //   setFormData({});
-  //   setErrors({});
-  // };
-
   const handleInputChange = (event, fieldName) => {
     const { value } = event.target;
 
-    // Check if the field name is 'field1' and the value contains only numbers
     if (
       fieldName === "Age" ||
       fieldName === "Phone" ||
@@ -158,7 +131,6 @@ export default function EditPatientPage() {
         return;
       }
     }
-    // Handle invalid input for 'field1' (e.g., show an error message)
     setFormData({
       ...formData,
       [fieldName]: value,
@@ -179,8 +151,21 @@ export default function EditPatientPage() {
     setErrors(newErrors);
     return isValid;
   };
-  console.log(formData);
+  const handlePhysicianChange = (selectedName) => {
+    console.log(selectedName);
+    const selectedPhysician = physicianData.find(
+      (physician) => `${physician[1]}` === selectedName
+    );
 
+    if (selectedPhysician) {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        "Physician Name": selectedName,
+        "Physician ID": selectedPhysician[0] || "",
+        "Physician Number": selectedPhysician[3] || "",
+      }));
+    }
+  };
   const apiFieldMapping = {
     "Patients Details": {
       "Patient Name (First, Last Name)": ["first_name", "last_name"],
@@ -200,10 +185,7 @@ export default function EditPatientPage() {
     },
     "Physician Details": {
       "Physician ID": "physicianId",
-      "Physician Name (First, Last Name)": [
-        "physician_first_name",
-        "physician_last_name",
-      ],
+      "Physician Name": "physician_name",
       "Physician Number": "pcp",
       Bill: "bill",
     },
@@ -211,14 +193,12 @@ export default function EditPatientPage() {
   const handleFinish = async () => {
     let formattedData = {};
 
-    // Iterate through each step
     steps.forEach((step) => {
       step.fields.forEach((fieldName) => {
         const mappedField = apiFieldMapping[step.label][fieldName];
 
         if (mappedField) {
           if (Array.isArray(mappedField)) {
-            // For fields like "First Name, Last Name"
             const [firstName, lastName] = (formData[fieldName] || "").split(
               " "
             );
@@ -258,124 +238,309 @@ export default function EditPatientPage() {
         justifyContent="space-between"
         mb={5}
       >
-        <Typography variant="h4" gutterBottom>
+        <Typography
+          variant="h4"
+          gutterBottom
+          sx={{ color: "white", fontWeight: "600" }}
+        >
           Edit Patients
         </Typography>
       </Stack>
-      <Box>
-        <Stepper activeStep={activeStep} orientation="vertical" sx={{ ml: 5 }}>
-          {steps.map((step, index) => (
-            <Step key={step.label}>
-              <StepLabel>{step.label}</StepLabel>
-              <StepContent>
-                <Typography>{step.description}</Typography>
-                <form>
-                  {/* <Container sx={{ display: "flex", flexDirection: ["column", "column", 'row'], justifyContent: "center", alignItems: "center" }}> */}
-
-                  <Grid container spacing={2}>
-                    {" "}
-                    {/* Use Grid container */}
-                    {step.fields.map((fieldName) => (
-                      <Grid item xs={4} key={fieldName}>
-                        {" "}
-                        {fieldName.toLowerCase() === "gender" ? (
-                          <FormControl
-                            variant="outlined"
-                            sx={{ mt: 2, minWidth: 120 }}
-                          >
-                            <InputLabel id={`${fieldName}-label`}>
-                              {fieldName}
-                            </InputLabel>
-                            <Select
-                              labelId={`${fieldName}-label`}
-                              id={fieldName}
-                              value={formData[fieldName] || ""}
-                              onChange={(event) =>
-                                handleInputChange(event, fieldName)
-                              }
-                              label={fieldName}
+      <Box
+        sx={{
+          backgroundColor: "#273142",
+          border: "1px solid #313D4F",
+          borderRadius: "10px",
+          marginRight: "20px",
+          width: "100%",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        {isFetching ? (
+          <div
+            style={{
+              width: "100%",
+              height: "100vh",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <CircularProgress color="primary" />
+          </div>
+        ) : (
+          <Stepper
+            activeStep={activeStep}
+            orientation="vertical"
+            sx={{ ml: 5, color: "white" }}
+          >
+            {steps.map((step, index) => (
+              <Step key={step.label}>
+                <StepLabel>
+                  <Typography sx={{ color: "white" }}>{step.label}</Typography>
+                </StepLabel>
+                <StepContent>
+                  <Typography sx={{ color: "white" }}>
+                    {step.description}
+                  </Typography>
+                  <form>
+                    <Grid container spacing={2}>
+                      {step.fields.map((fieldName) => (
+                        <Grid item xs={4} key={fieldName}>
+                          {" "}
+                          {fieldName.toLowerCase() === "gender" ? (
+                            <FormControl
+                              variant="outlined"
+                              sx={{
+                                mt: 2,
+                                width: 195,
+                                "& .MuiOutlinedInput-notchedOutline": {
+                                  borderColor: "white",
+                                },
+                                "&:hover .MuiOutlinedInput-notchedOutline": {
+                                  borderColor: "#ccc",
+                                },
+                                "&.Mui-focused .MuiOutlinedInput-notchedOutline":
+                                  {
+                                    borderColor: "white",
+                                  },
+                              }}
                             >
-                              <MenuItem value="Male">Male</MenuItem>
-                              <MenuItem value="Female">Female</MenuItem>
-                            </Select>
-                          </FormControl>
-                        ) : (
-                          <TextField
-                            id={fieldName}
-                            label={fieldName}
-                            variant="outlined"
-                            type={
-                              fieldName.toLowerCase().includes("next visit") ||
-                              fieldName.toLowerCase().includes("visit date")
-                                ? "date"
-                                : "text"
-                            }
-                            value={formData[fieldName] || ""}
-                            onChange={(event) =>
-                              handleInputChange(event, fieldName)
-                            }
-                            sx={{ mt: 2 }}
-                            InputLabelProps={{
-                              shrink:
+                              <InputLabel
+                                id={`${fieldName}-label`}
+                                sx={{
+                                  color: "white",
+                                  "&.Mui-focused": {
+                                    color: "white",
+                                  },
+                                }}
+                              >
+                                {fieldName}
+                              </InputLabel>
+                              <Select
+                                labelId={`${fieldName}-label`}
+                                id={fieldName}
+                                value={formData[fieldName] || ""}
+                                onChange={(event) =>
+                                  handleInputChange(event, fieldName)
+                                }
+                                label={fieldName}
+                                sx={{
+                                  "& .MuiInputBase-input": {
+                                    color: "white",
+                                  },
+                                  "& .MuiSvgIcon-root": {
+                                    color: "white",
+                                  },
+                                }}
+                              >
+                                <MenuItem value="Male">Male</MenuItem>
+                                <MenuItem value="Female">Female</MenuItem>
+                              </Select>
+                            </FormControl>
+                          ) : fieldName.toLowerCase() === "physician name" ? (
+                            <FormControl
+                              variant="outlined"
+                              sx={{
+                                mt: 2,
+                                width: 195,
+                                "& .MuiOutlinedInput-notchedOutline": {
+                                  borderColor: "white",
+                                },
+                                "&:hover .MuiOutlinedInput-notchedOutline": {
+                                  borderColor: "#ccc",
+                                },
+                                "&.Mui-focused .MuiOutlinedInput-notchedOutline":
+                                  {
+                                    borderColor: "white",
+                                  },
+                              }}
+                            >
+                              <InputLabel
+                                id="physician-name-label"
+                                sx={{
+                                  color: "white",
+                                  "&.Mui-focused": {
+                                    color: "white",
+                                  },
+                                }}
+                              >
+                                Physician Name
+                              </InputLabel>
+                              <Select
+                                labelId="physician-name-label"
+                                id="Physician Name"
+                                value={
+                                  physicianData?.some(
+                                    (physician) =>
+                                      physician[1]?.toString() ===
+                                      formData["Physician Name"]
+                                  )
+                                    ? formData["Physician Name"]?.toString()
+                                    : ""
+                                }
+                                onChange={(event) =>
+                                  handlePhysicianChange(event.target.value)
+                                }
+                                label="Physician Name"
+                                sx={{
+                                  "& .MuiInputBase-input": {
+                                    color: "white",
+                                  },
+                                  "& .MuiSvgIcon-root": {
+                                    color: "white",
+                                  },
+                                }}
+                              >
+                                {physicianData?.slice(1)?.map((physician) => (
+                                  <MenuItem
+                                    key={physician[1]}
+                                    value={physician[1]}
+                                  >
+                                    {physician[1]?.toString()}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                          ) : (
+                            <TextField
+                              id={fieldName}
+                              label={fieldName}
+                              variant="outlined"
+                              type={
                                 fieldName
                                   .toLowerCase()
                                   .includes("next visit") ||
                                 fieldName.toLowerCase().includes("visit date")
-                                  ? true
-                                  : undefined,
-                            }}
-                            InputProps={{
-                              readOnly:
-                                fieldName === "Patient ID" ||
-                                fieldName === "Physician ID"
-                                  ? true
-                                  : false,
-                            }}
-                          />
-                        )}
-                        <Typography style={{ color: "red" }}>
-                          {errors[fieldName]}
-                        </Typography>
-                      </Grid>
-                    ))}
-                  </Grid>
+                                  ? "date"
+                                  : "text"
+                              }
+                              value={formData[fieldName] || ""}
+                              onChange={(event) =>
+                                handleInputChange(event, fieldName)
+                              }
+                              sx={{
+                                mt: 2,
+                                "& .MuiOutlinedInput-root": {
+                                  "& fieldset": {
+                                    borderColor: "white",
+                                  },
+                                  "&:hover fieldset": {
+                                    borderColor: "#ccc",
+                                  },
+                                  "&.Mui-focused fieldset": {
+                                    borderColor: "white",
+                                  },
+                                },
+                                "& .MuiInputLabel-root": {
+                                  color: "white",
+                                },
+                                "& .MuiInputLabel-root.Mui-focused": {
+                                  color: "white",
+                                },
+                                "& input": {
+                                  color: "white",
+                                },
+                                "& .MuiSvgIcon-root": {
+                                  color: "white",
+                                },
+                                "& input[type='date']::-webkit-calendar-picker-indicator":
+                                  {
+                                    filter: "invert(1)",
+                                  },
+                              }}
+                              InputLabelProps={{
+                                shrink:
+                                  fieldName
+                                    .toLowerCase()
+                                    .includes("next visit") ||
+                                  fieldName.toLowerCase().includes("visit date")
+                                    ? true
+                                    : undefined,
+                              }}
+                              InputProps={{
+                                readOnly:
+                                  fieldName === "Patient ID" ||
+                                  fieldName === "Physician ID"
+                                    ? true
+                                    : false,
+                              }}
+                            />
+                          )}
+                          <Typography style={{ color: "red" }}>
+                            {errors[fieldName]}
+                          </Typography>
+                        </Grid>
+                      ))}
+                    </Grid>
 
-                  {/* </Container> */}
-                </form>
-                <Box sx={{ mb: 2 }}>
-                  <Container>
-                    <Button
-                      variant="contained"
-                      onClick={handleNext}
-                      sx={{ mt: 1, mr: 1 }}
-                    >
-                      {index === steps.length - 1 ? "Finish" : "Continue"}
-                    </Button>
-                    <Button
-                      disabled={index === 0}
-                      onClick={handleBack}
-                      sx={{ mt: 1, mr: 1 }}
-                    >
-                      Back
-                    </Button>
-                  </Container>
-                </Box>
-              </StepContent>
-            </Step>
-          ))}
-        </Stepper>
+                    {/* </Container> */}
+                  </form>
+                  <Box sx={{ mb: 2, mt: 1 }}>
+                    <Container>
+                      <Button
+                        variant="contained"
+                        onClick={handleNext}
+                        sx={{ mt: 1, mr: 1 }}
+                      >
+                        {index === steps.length - 1 ? "Finish" : "Continue"}
+                      </Button>
+                      <Button
+                        disabled={index === 0}
+                        onClick={handleBack}
+                        sx={{ mt: 1, mr: 1, color: "white" }}
+                      >
+                        <Typography sx={{ color: "white" }}>Back</Typography>
+                      </Button>
+                    </Container>
+                  </Box>
+                </StepContent>
+              </Step>
+            ))}
+          </Stepper>
+        )}
         {activeStep === steps.length && (
-          <Paper square elevation={0} sx={{ p: 3 }}>
-            <Typography>{`Want to update these details?`}</Typography>
-            <Button onClick={handleBack} sx={{ mt: 1, mr: 1 }}>
+          <Paper
+            square
+            elevation={0}
+            sx={{ p: 3, backgroundColor: "transparent" }}
+          >
+            <Typography
+              sx={{ color: "white" }}
+            >{`Want to save these details?`}</Typography>
+            <Button onClick={handleBack} sx={{ mt: 1, mr: 1, color: "white" }}>
               Back
             </Button>
             <Button
               onClick={handleFinish}
-              sx={{ mt: 1, mr: 1 }}
+              sx={{
+                mt: 1,
+                mr: 1,
+                position: "relative",
+                backgroundColor: loading ? "#1976d2" : undefined, // Default blue background when loading
+                "&.Mui-disabled": {
+                  backgroundColor: "#1976d2", // Keep default background when disabled
+                },
+                height: 40, // ✅ Consistent height
+                minWidth: 100, // Optional to maintain button width consistency
+              }}
               variant="contained"
+              disabled={loading}
             >
-              Save
+              {loading ? (
+                <CircularProgress
+                  size={24}
+                  sx={{
+                    color: "white",
+                    position: "absolute",
+                  }}
+                />
+              ) : (
+                <span style={{ visibility: loading ? "hidden" : "visible" }}>
+                  Save
+                </span>
+              )}
             </Button>
           </Paper>
         )}

@@ -5,7 +5,7 @@ import PatientForm from "../Views/PatientForm";
 
 export default function CreatePatientsPage() {
   return (
-    <>
+    <div style={{ width: "100%" }}>
       <Helmet>
         <title> Add Patients | Bhumio </title>
       </Helmet>
@@ -15,11 +15,15 @@ export default function CreatePatientsPage() {
         justifyContent="space-between"
         mb={5}
       >
-        <Typography variant="h4" gutterBottom>
+        <Typography
+          variant="h4"
+          gutterBottom
+          sx={{ color: "white", fontWeight: "600" }}
+        >
           Add Patients Form
         </Typography>
       </Stack>
       <PatientForm />
-    </>
+    </div>
   );
 }

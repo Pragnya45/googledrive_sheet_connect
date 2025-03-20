@@ -7,7 +7,6 @@ import { bgBlur } from "../../utils/cssStyles";
 // components
 import Iconify from "../../Components/iconify";
 //
-// import Searchbar from "./Searchbar";
 
 // ----------------------------------------------------------------------
 

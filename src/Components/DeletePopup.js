@@ -29,7 +29,6 @@ export default function DeletePopup({
         },
       }}
     >
-      {/* Dialog Title (optional, but maintaining message here) */}
       <DialogTitle>
         <Typography
           variant="h6"
@@ -40,7 +39,6 @@ export default function DeletePopup({
         </Typography>
       </DialogTitle>
 
-      {/* Dialog Content */}
       <DialogContent
         sx={{
           display: "flex",
@@ -49,7 +47,6 @@ export default function DeletePopup({
           paddingTop: "8px",
         }}
       >
-        {/* Cancel Button */}
         <Button
           variant="contained"
           onClick={handleClose}
@@ -68,7 +65,6 @@ export default function DeletePopup({
           Cancel
         </Button>
 
-        {/* Confirm Button */}
         <Button
           variant="contained"
           onClick={handleConfirm}

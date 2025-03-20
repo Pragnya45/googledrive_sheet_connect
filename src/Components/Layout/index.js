@@ -3,13 +3,9 @@ import { Outlet } from "react-router-dom";
 // @mui
 import { styled } from "@mui/material/styles";
 //
-import Header from "./Header";
 import Sidebar from "./Sidebar";
 
 // ----------------------------------------------------------------------
-
-const APP_BAR_MOBILE = 64;
-const APP_BAR_DESKTOP = 92;
 
 const StyledRoot = styled("div")({
   display: "flex",
@@ -18,17 +14,6 @@ const StyledRoot = styled("div")({
   overflowY: "hidden",
 });
 
-const Main = styled("div")(({ theme }) => ({
-  flexGrow: 1,
-  width: "100%",
-  overflow: "auto",
-  minHeight: "100vh",
-  padding: "24px",
-  overflowY: "auto",
-  paddingBottom: theme.spacing(10),
-  backgroundColor: "#141420",
-}));
-
 // ----------------------------------------------------------------------
 
 export default function Layout() {
@@ -36,7 +21,6 @@ export default function Layout() {
 
   return (
     <StyledRoot>
-      {/* <Header onOpenNav={() => setOpen(true)} /> */}
       <div
         style={{
           display: "flex",
@@ -45,16 +29,19 @@ export default function Layout() {
           overflow: "hidden",
         }}
       >
-        <Sidebar openNav={open} onCloseNav={() => setOpen(false)} />
+        <Sidebar
+          openNav={open}
+          onOpenNav={() => setOpen(true)}
+          onCloseNav={() => setOpen(false)}
+        />
         <div
+          className="custom-scrollbar"
           style={{
-            // flexGrow: 1,
             width: "100%",
             overflowY: "auto",
             minHeight: "100vh",
             height: "100%",
             padding: "24px",
-            overflowY: "auto",
             paddingBottom: "200px",
             backgroundColor: "#141420",
           }}

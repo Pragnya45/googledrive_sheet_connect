@@ -2,9 +2,15 @@ import PropTypes from "prop-types";
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { styled, alpha } from "@mui/material/styles";
-import { Box, Link, Drawer, Typography, Avatar } from "@mui/material";
+import {
+  Box,
+  Link,
+  Drawer,
+  Typography,
+  Avatar,
+  IconButton,
+} from "@mui/material";
 import useResponsive from "../../hooks/useResponsive";
-//import Logo from "../../../components/logo";
 import Scrollbar from "../scrollbar";
 import NavSection from "../nav-section/NavSection";
 import avatar from "../../assets/images/avatars/avatar_default.jpg";
@@ -12,6 +18,8 @@ import SvgColor from "../svg-color";
 import { adminLogoutFn } from "../../Redux/logoutSlice";
 import { useSelector, useDispatch } from "react-redux";
 import Button from "@mui/material/Button";
+import { adminState } from "../../Redux/adminSlice";
+import Iconify from "../../Components/iconify";
 
 const icon = (name) => (
   <SvgColor
@@ -59,9 +67,10 @@ Sidebar.propTypes = {
   onCloseNav: PropTypes.func,
 };
 
-export default function Sidebar({ openNav, onCloseNav }) {
+export default function Sidebar({ openNav, onCloseNav, onOpenNav }) {
   const { pathname } = useLocation();
   const dispatch = useDispatch();
+  const { token } = useSelector(adminState);
 
   const isDesktop = useResponsive("up", "lg");
   function signOut() {
@@ -106,19 +115,21 @@ export default function Sidebar({ openNav, onCloseNav }) {
               <Typography variant="body2" sx={{ color: "white" }}>
                 Admin
               </Typography>
-              <Button
-                variant="outlined"
-                style={{
-                  border: "none",
-                  textAlign: "left",
-                  alignItems: "flex-start",
-                  padding: 0,
-                  fontWeight: "600",
-                }}
-                onClick={signOut}
-              >
-                Sign Out
-              </Button>
+              {token && (
+                <Button
+                  variant="outlined"
+                  style={{
+                    border: "none",
+                    textAlign: "left",
+                    alignItems: "flex-start",
+                    padding: 0,
+                    fontWeight: "600",
+                  }}
+                  onClick={signOut}
+                >
+                  Sign Out
+                </Button>
+              )}
             </Box>
           </StyledAccount>
         </Link>
@@ -137,6 +148,16 @@ export default function Sidebar({ openNav, onCloseNav }) {
         background: "#2E2E49",
       }}
     >
+      <IconButton
+        onClick={onOpenNav}
+        sx={{
+          mr: 1,
+          color: "text.primary",
+          display: { lg: "none" },
+        }}
+      >
+        <Iconify icon="eva:menu-2-fill" />
+      </IconButton>
       {isDesktop ? (
         <Drawer
           open
@@ -159,8 +180,7 @@ export default function Sidebar({ openNav, onCloseNav }) {
             keepMounted: true,
           }}
           PaperProps={{
-            sx: { width: NAV_WIDTH },
-            bgcolor: "#2E2E49",
+            sx: { width: NAV_WIDTH, bgcolor: "#2E2E49" },
           }}
         >
           {renderContent}
