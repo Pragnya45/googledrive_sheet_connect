@@ -64,6 +64,8 @@ This project is a **React.js** website built with **MUI (Material-UI)** componen
 git clone https://github.com/Pragnya45/googledrive_sheet_connect.git
 cd googledrive_sheet_connect
 
+```
+
 ### 2. Set Up Google Cloud Console
 - Create a project in [Google Cloud Console](https://console.cloud.google.com/).
 - Enable the following APIs:
@@ -78,9 +80,7 @@ cd googledrive_sheet_connect
 
 - Add your `client_id` to the frontend configuration.
 
-```
-
-### 4. Run Frontend (React.js)
+### 3. Run Frontend (React.js)
 
 ```bash
 cd frontend
