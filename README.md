@@ -91,7 +91,7 @@ npm run start
 
 ### 🌐 4. Environment Variables Setup
 
-Create a `.env` file in the `frontend` directory and add the following variables:
+Create a `.env` file in the `root` directory and add the following variables:
 
 ```bash
 REACT_APP_BACKEND_URL=your-backend-url
