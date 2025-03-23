@@ -4,4 +4,5 @@ export const env = {
   scopes: [
     "https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/spreadsheets",
   ],
+  sampleFIleId: process.env.REACT_APP_SAMPLE_FILE_ID,
 };
