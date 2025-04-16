@@ -1,70 +1,126 @@
-# Getting Started with Create React App
+# 🩺 Patient Management System using Google Sheets
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project is a **React.js** website built with **MUI (Material-UI)** components that seamlessly connects to **Google Drive** to manage patient data stored in Google Sheets. With this platform, you can effortlessly perform CRUD operations on the sheet directly from the website.
 
-## Available Scripts
+🌐 **Live Demo:** [Deployed on Netlify](#)  
+⚙️ **Backend:** Nest.js API integrated with Google Drive API  
 
-In the project directory, you can run:
+---
 
-### `npm start`
+## ✨ Features
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+✅ **Google Authentication with OAuth 2.0**  
+✅ **Google Sheets CRUD Operations**  
+✅ **Google Drive Picker API for Spreadsheet Selection**  
+✅ **Private Route for Patient Access**  
+✅ **Search & Filter Patients** – Search by name, patient ID, and email  
+✅ **Add, Edit, and Delete Patient Records**  
+✅ **Paginated Table for Easy Navigation**  
+✅ **Physician & Prescription Details**  
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+---
 
-### `npm test`
+## 🔒 Authentication Workflow
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+1. **Google Login with OAuth 2.0:**  
+   - Configured Google Identity Services.  
+   - Set up OAuth credentials on **Google Cloud Console**.  
+   - Google account login generates a `client_id` to authenticate users.  
+2. **Spreadsheet Selection:**  
+   - Utilized Google Picker API to select a spreadsheet from the user's Google Drive.  
+   - Private routes restrict patient data access until a valid sheet is uploaded.  
 
-### `npm run build`
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 📊 CRUD Operations on Google Sheets
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- **Create:** Add a new patient with physician and prescription details.  
+- **Read:** View and search patient details with multiple filters.  
+- **Update:** Modify existing patient information.  
+- **Delete:** Remove patient records, and changes reflect directly in Google Sheets.  
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+---
 
-### `npm run eject`
+## 🛠️ Tech Stack
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### Frontend:
+- ⚛️ **React.js** – UI built using MUI components  
+- 🎨 **Material-UI (MUI)** – For a clean and responsive design  
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Backend:
+- 🟢 **Nest.js** – REST API handling Google Drive operations  
+- 📡 **Google Drive API** – Directly interfaced for CRUD functionality  
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+---
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## 🚀 Deployment
 
-## Learn More
+- Deployed on **Netlify** for the frontend.  
+- Nest.js backend running on a secure cloud server.  
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+---
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## 📝 Setup Instructions
 
-### Code Splitting
+### 1. Clone the Repository
+```bash
+git clone https://github.com/your-username/your-repo-name.git
+cd your-repo-name
+```
+### 2. Set Up Google Cloud Console
+- Create a project in [Google Cloud Console](https://console.cloud.google.com/).
+- Enable the following APIs:
+  - ✅ **Google Drive API**
+  - ✅ **Google Sheets API**
+- Generate OAuth 2.0 credentials by following these steps:
+  1. Go to the **Credentials** section in your Google Cloud project.
+  2. Click on **Create Credentials** and select **OAuth Client ID**.
+  3. Configure the consent screen and set the application type to **Web Application**.
+  4. Add your **Authorized Redirect URI** (e.g., `https://your-app-url.com/auth`).
+  5. Download the `credentials.json` file and place it in your backend directory.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+- Add your `client_id` to the frontend configuration.
+### 3. Configure Backend (Nest.js)
 
-### Analyzing the Bundle Size
+- Add the necessary environment variables such as:
+  - `CLIENT_ID`
+  - `CLIENT_SECRET`
+  - `REDIRECT_URI`
+  - `SERVICE_ACCOUNT_EMAIL`
+  - `PRIVATE_KEY`
+  - and any other required Google API credentials.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+> Make sure these variables are stored securely in a `.env` file.
 
-### Making a Progressive Web App
+#### Run the backend:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+```bash
+npm install
+npm run start
+```
+### 4. Run Frontend (React.js)
+```bash
+cd frontend
+npm install
+npm run start
+```
+### 🌐 5. Environment Variables Setup
 
-### Advanced Configuration
+Create a `.env` file in the `frontend` directory and add the following variables:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+```bash
+REACT_APP_BACKEND_URL=your-backend-url
+REACT_APP_GOOGLE_CLIENTID=your-google-client-id
+REACT_APP_SAMPLE_FILE_ID=your-samplesheet-id
+- **`REACT_APP_BACKEND_URL`** – URL of your Nest.js backend.  
+- **`REACT_APP_GOOGLE_CLIENTID`** – OAuth 2.0 Client ID generated from Google Cloud Console.
+```
 
-### Deployment
+## 📄 Sample Google Sheet
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+To test the application, you can use this sample Google Sheet to upload patient data:  
 
-### `npm run build` fails to minify
+👉 [Click here to access the sample sheet](https://docs.google.com/spreadsheets/d/1JAHoAvX2395OWndkfE58hKkUzvEgyblB/edit?gid=696475617#gid=696475617)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- Make a copy of the sheet and upload it using the website.  
+- The sheet contains sample patient data to help you get started.
